@@ -9,7 +9,7 @@
 
 class Bunk {
 protected:
-    int x, y = 0;
+    int x = 0, y = 0;
     Biotope* biotope = nullptr;
 
 public:
@@ -23,6 +23,37 @@ public:
     void setY(int y);
     void print();
 };
+
+int Bunk::getX() const {
+    return x;
+}
+
+int Bunk::getY() const {
+    return y;
+}
+
+Biotope* Bunk::getBiotope() const {
+    return biotope;
+}
+
+void Bunk::setBiotope(Biotope* biotope) {
+    Bunk::biotope = biotope;
+}
+
+void Bunk::setX(int x) {
+    Bunk::x = x;
+}
+
+void Bunk::setY(int y) {
+    Bunk::y = y;
+}
+
+void Bunk::print() {
+    std::cout << "Bunk: " << x << "x" << y << std::endl;
+    if (biotope != nullptr) {
+        biotope->print();
+    }
+}
 
 
 #endif //POS_SP_BUNK_H

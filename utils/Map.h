@@ -7,6 +7,7 @@
 
 #include "../models/Bunk.h"
 #include "BiotopeManager.h"
+#include "random"
 
 class Map {
 private:
@@ -29,6 +30,9 @@ void Map::initializeBunks() {
 
     auto* biotopManager = BiotopeManager::getInstance();
 
+    static std::default_random_engine rnd;
+    static std::uniform_real_distribution<double> dist(0.0, 1.0);
+
     for (int x = 0; x < width; x++) {
         this->bunks[x] = new Bunk[height];
         for (int y = 0; y < height; y++) {
@@ -36,8 +40,41 @@ void Map::initializeBunks() {
 
             bunk.setX(x);
             bunk.setY(y);
-            bunk.setBiotope(BiotopeManager::getInstance()->getBiotop(Biotopes::MEADOW));
+
+            if (dist(rnd) < 0.6) {
+                bunk.setBiotope(biotopManager->getBiotop(Biotopes::MEADOW));
+            } else if (dist(rnd) < 0.8) {
+                bunk.setBiotope(biotopManager->getBiotop(Biotopes::FOREST));
+            } else if (dist(rnd) < 0.95) {
+                bunk.setBiotope(biotopManager->getBiotop(Biotopes::WATER));
+            } else {
+                bunk.setBiotope(biotopManager->getBiotop(Biotopes::STONE));
+            }
         }
+    }
+}
+
+int Map::getWidth() const {
+    return width;
+}
+
+int Map::getHeight() const {
+    return height;
+}
+
+Bunk* Map::getBunks() const {
+    return *bunks;
+}
+
+void Map::print() {
+    std::cout << "Map: " << width << "x" << height << std::endl;
+    for (int y = 0; y < height; y++) {
+        std::cout << "| ";
+        for (int x = 0; x < width; x++) {
+            auto& bunk = this->bunks[x][y];
+            std::cout << bunk.getBiotope()->getCode() << " ";
+        }
+        std::cout << "|" << std::endl;
     }
 }
 
