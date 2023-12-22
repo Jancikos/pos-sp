@@ -26,26 +26,27 @@ public:
 };
 
 void Map::initializeBunks() {
-    this->bunks = new Bunk*[width];
+    this->bunks = new Bunk*[this->width];
 
     auto* biotopManager = BiotopeManager::getInstance();
 
     static std::default_random_engine rnd;
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
 
-    for (int x = 0; x < width; x++) {
-        this->bunks[x] = new Bunk[height];
-        for (int y = 0; y < height; y++) {
+    for (int x = 0; x < this->width; x++) {
+        this->bunks[x] = new Bunk[this->height];
+        for (int y = 0; y < this->height; y++) {
             auto& bunk = this->bunks[x][y];
 
             bunk.setX(x);
             bunk.setY(y);
 
-            if (dist(rnd) < 0.6) {
+            auto num = dist(rnd);
+            if (num < 0.6) {
                 bunk.setBiotope(biotopManager->getBiotop(Biotopes::MEADOW));
-            } else if (dist(rnd) < 0.8) {
+            } else if (num < 0.8) {
                 bunk.setBiotope(biotopManager->getBiotop(Biotopes::FOREST));
-            } else if (dist(rnd) < 0.95) {
+            } else if (num < 0.95) {
                 bunk.setBiotope(biotopManager->getBiotop(Biotopes::WATER));
             } else {
                 bunk.setBiotope(biotopManager->getBiotop(Biotopes::STONE));
@@ -55,22 +56,22 @@ void Map::initializeBunks() {
 }
 
 int Map::getWidth() const {
-    return width;
+    return this->width;
 }
 
 int Map::getHeight() const {
-    return height;
+    return this->height;
 }
 
 Bunk* Map::getBunks() const {
-    return *bunks;
+    return *this->bunks;
 }
 
 void Map::print() {
-    std::cout << "Map: " << width << "x" << height << std::endl;
-    for (int y = 0; y < height; y++) {
+    std::cout << "Map: " << this->width << "x" << this->height << std::endl;
+    for (int y = 0; y < this->height; y++) {
         std::cout << "| ";
-        for (int x = 0; x < width; x++) {
+        for (int x = 0; x < this->width; x++) {
             auto& bunk = this->bunks[x][y];
             std::cout << bunk.getBiotope()->getCode() << " ";
         }

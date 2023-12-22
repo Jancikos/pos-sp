@@ -25,33 +25,35 @@ public:
 };
 
 int Bunk::getX() const {
-    return x;
+    return this->x;
 }
 
 int Bunk::getY() const {
-    return y;
+    return this->y;
 }
 
 Biotope* Bunk::getBiotope() const {
-    return biotope;
+    return this->biotope;
 }
 
 void Bunk::setBiotope(Biotope* biotope) {
-    Bunk::biotope = biotope;
+    this->biotope = biotope;
 }
 
 void Bunk::setX(int x) {
-    Bunk::x = x;
+    this->x = x;
 }
 
 void Bunk::setY(int y) {
-    Bunk::y = y;
+    this->y = y;
 }
 
 void Bunk::print() {
-    std::cout << "Bunk: " << x << "x" << y << std::endl;
-    if (biotope != nullptr) {
-        biotope->print();
+    std::cout << "Bunk: " << this->x << "x" << this->y << std::endl;
+    if (this->biotope != nullptr) {
+        this->biotope->print();
+    } else {
+        std::cout << "No biotope" << std::endl;
     }
 }
 

@@ -18,7 +18,7 @@ private:
 public:
     Biotope(std::string title, char code, bool isFlammable) : title(title), code(code), isFlammable(isFlammable) {};
     std::string getTitle() {
-        return title;
+        return this->title;
     }
     char getCode() const;
     bool getIsFlammable() const;
@@ -26,15 +26,15 @@ public:
 };
 
 char Biotope::getCode() const {
-    return code;
+    return this->code;
 }
 
 bool Biotope::getIsFlammable() const {
-    return isFlammable;
+    return this->isFlammable;
 }
 
 void Biotope::print() {
-    std::cout << "Biotope: " << title << " (" << code << ")" << std::endl;
+    std::cout << "Biotope: " << this->title << " (" << this->code << ")" << std::endl;
 //    std::cout << "Is flammable: " << (isFlammable ? "Yes" : "No") << std::endl;
 }
 
