@@ -12,7 +12,7 @@ enum Biotopes {
     FOREST,
     WATER,
     STONE,
-    COUNT // this is not a biotop, but a number of biotypes, so it should be the last
+    COUNT // this is not a biotop, but a number of windTypes, so it should be the last
 };
 
 class BiotopeManager {

@@ -7,17 +7,20 @@
 
 #include "Map.h"
 #include "Options.h"
+#include "WindManager.h"
 #include <random>
 #include <chrono>
 
 class Simulation {
 private:
+    WindType windType;
     Map *map;
     long long time = 0;
 
 public:
     Simulation(int width, int height) {
         this->map = new Map(width, height);
+        this->windType = WindType::SOUTH;
     }
 
     void run();
@@ -29,6 +32,7 @@ public:
     enum MainMenuOptions {
         MAKE_STEP,
         ADD_FIRE,
+        CHANGE_WIND, // todo
         EXIT
     };
 
@@ -56,6 +60,7 @@ void Simulation::run() {
             switch (option) {
                 case MainMenuOptions::ADD_FIRE:
                     std::cout << "Adding fire" << std::endl;
+                    // todo: add fire manualy - na definovanu poziciu
                     makeFirstStep();
                     break;
                 case MainMenuOptions::MAKE_STEP:
@@ -78,9 +83,11 @@ void Simulation::run() {
 void Simulation::makeStep() {
     std::cout << std::endl;
 
-//      rozsirime poziar
-    this->map->spreadFire();
+//      TODO - zmenime smer vetra
 
+
+//      rozsirime poziar
+    this->map->spreadFire(this->windType);
 
 //      vypiseme mapu
     this->print();
@@ -89,6 +96,8 @@ void Simulation::makeStep() {
 }
 
 void Simulation::makeFirstStep() {
+
+//    TODO - inicializacia vetra
 
 //    inicializacia poziaru
     std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
@@ -108,6 +117,7 @@ void Simulation::makeFirstStep() {
 
 void Simulation::print() {
     std::cout << "Time: " << this->time << std::endl;
+    std::cout << "Wind: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
     this->map->print();
     this->time++;
 }

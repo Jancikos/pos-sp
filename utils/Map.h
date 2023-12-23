@@ -5,9 +5,12 @@
 #ifndef POS_SP_MAP_H
 #define POS_SP_MAP_H
 
+#include <chrono>
 #include "../models/Cell.h"
 #include "BiotopeManager.h"
 #include "random"
+#include "../models/Wind.h"
+#include "WindManager.h"
 
 class Map {
 private:
@@ -24,7 +27,7 @@ public:
     Cell** getCells() const;
     void print();
 
-    void spreadFire();
+    void spreadFire(WindType windType);
 
     bool isOutOfMap(int x, int y);
 };
@@ -84,7 +87,7 @@ void Map::print() {
     }
 }
 
-void Map::spreadFire() {
+void Map::spreadFire(WindType windType) {
     std::vector<Cell*> bunksOnFire;
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
@@ -94,6 +97,11 @@ void Map::spreadFire() {
             }
         }
     }
+
+    static std::uniform_real_distribution<double> dist(0.0, 1.0);
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine rnd(seed);
+    auto windManager = WindManager::getInstance();
 
     for (auto* bunk : bunksOnFire) {
         for (int xOffset = -1; xOffset <= 1; xOffset++) {
@@ -107,6 +115,13 @@ void Map::spreadFire() {
                 int x = bunk->getX() + xOffset;
                 int y = bunk->getY() + yOffset;
                 if (this->isOutOfMap(x, y)) {
+                    continue;
+                }
+
+                double pOfFireSpread = windManager->probabilityOfSpreadingFire(windType, xOffset, yOffset);
+
+                // bunk is not on fire
+                if (dist(rnd) > pOfFireSpread) {
                     continue;
                 }
 
