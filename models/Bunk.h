@@ -11,6 +11,7 @@ class Bunk {
 protected:
     int x = 0, y = 0;
     Biotope* biotope = nullptr;
+    bool isOnFire = false;
 
 public:
     Bunk() = default;
@@ -21,7 +22,9 @@ public:
     void setBiotope(Biotope* biotope);
     void setX(int x);
     void setY(int y);
-    void print();
+    void setIsOnFire(bool isOnFire);
+    bool getIsOnFire() const;
+    void printMap();
 };
 
 int Bunk::getX() const {
@@ -48,13 +51,24 @@ void Bunk::setY(int y) {
     this->y = y;
 }
 
-void Bunk::print() {
-    std::cout << "Bunk: " << this->x << "x" << this->y << std::endl;
-    if (this->biotope != nullptr) {
-        this->biotope->print();
-    } else {
-        std::cout << "No biotope" << std::endl;
+void Bunk::printMap() {
+    char biotopeCode = this->biotope->getCode();
+
+    if (this->isOnFire) {
+        // print it in red
+        std::cout << "\033[1;31m" << biotopeCode << "\033[0m";
+        return;
     }
+
+    std::cout << biotopeCode;
+}
+
+void Bunk::setIsOnFire(bool isOnFire) {
+    this->isOnFire = isOnFire;
+}
+
+bool Bunk::getIsOnFire() const {
+    return this->isOnFire;
 }
 
 

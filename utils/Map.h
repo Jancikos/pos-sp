@@ -21,7 +21,7 @@ public:
     void initializeBunks();
     int getWidth() const;
     int getHeight() const;
-    Bunk* getBunks() const;
+    Bunk** getBunks() const;
     void print();
 };
 
@@ -63,8 +63,8 @@ int Map::getHeight() const {
     return this->height;
 }
 
-Bunk* Map::getBunks() const {
-    return *this->bunks;
+Bunk** Map::getBunks() const {
+    return this->bunks;
 }
 
 void Map::print() {
@@ -73,7 +73,8 @@ void Map::print() {
         std::cout << "| ";
         for (int x = 0; x < this->width; x++) {
             auto& bunk = this->bunks[x][y];
-            std::cout << bunk.getBiotope()->getCode() << " ";
+            bunk.printMap();
+            std::cout << " ";
         }
         std::cout << "|" << std::endl;
     }
