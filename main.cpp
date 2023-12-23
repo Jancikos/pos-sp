@@ -1,24 +1,18 @@
 #include <iostream>
 #include "utils/BiotopeManager.h"
 #include "utils/Map.h"
+#include "utils/Simulation.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl << std::endl;
+    std::cout << "Hello, simulation poziaru!" << std::endl << std::endl;
 
-    auto* biotopMnaager = BiotopeManager::getInstance();
-    biotopMnaager->printBiotops();
+    int width = 10;
+    int height = 5;
+//    std::cout << "Zadaj sirku a vysku mapy: " << std::endl;
+//    std::cin >> width >> height;
 
-    std::cout << "Biotop forest este raz: " << std::endl;
-    auto* biotopForest = biotopMnaager->getBiotop(Biotopes::FOREST);
-    biotopForest->print();
-
-    int width;
-    int height;
-    std::cout << "Zadaj sirku a vysku mapy: " << std::endl;
-    std::cin >> width >> height;
-
-    auto* map = new Map(width, height);
-    map->print();
+    Simulation simulation(width, height);
+    simulation.run();
 
     return 0;
 }
