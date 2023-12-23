@@ -6,6 +6,7 @@
 #define POS_SP_SIMULATION_H
 
 #include "Map.h"
+#include "Options.h"
 
 class Simulation {
 private:
@@ -20,20 +21,38 @@ public:
     void run();
 
     void makeStep();
+
+    enum MainMenuOptions {
+        MAKE_STEP = 1,
+        EXIT = 2
+    };
 };
 
 void Simulation::run() {
-    while (true) {
+    int option = 0;
+    Options mainMenu;
+    mainMenu.addOption(MainMenuOptions::MAKE_STEP, "Make step");
+    mainMenu.addOption(MainMenuOptions::EXIT, "Exit");
+
+    do {
         this->makeStep();
 
-        // enter 0 to stop
-        std::cout << "Enter 0 to stop: (ine cislo pre pokracovanie) ";
-        int input;
-        std::cin >> input;
-        if (input == 0) {
-            break;
+        option = mainMenu.getOptionCLI("Co dalej?");
+
+        switch (option) {
+            case MainMenuOptions::MAKE_STEP:
+                std::cout << "Making step" << std::endl;
+                break;
+            case MainMenuOptions::EXIT:
+                std::cout << "Exiting" << std::endl;
+                break;
+            default:
+                std::cout << "Neplatna volba" << std::endl;
+                break;
         }
-    }
+
+
+    } while(option != MainMenuOptions::EXIT);
 }
 
 void Simulation::makeStep() {
