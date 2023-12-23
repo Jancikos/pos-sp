@@ -5,14 +5,14 @@
 #ifndef POS_SP_MAP_H
 #define POS_SP_MAP_H
 
-#include "../models/Bunk.h"
+#include "../models/Cell.h"
 #include "BiotopeManager.h"
 #include "random"
 
 class Map {
 private:
     int width, height;
-    Bunk** bunks;
+    Cell** cells;
 
 public:
     Map(int width, int height) : width(width), height(height) {
@@ -21,7 +21,7 @@ public:
     void initializeBunks();
     int getWidth() const;
     int getHeight() const;
-    Bunk** getBunks() const;
+    Cell** getCells() const;
     void print();
 
     void spreadFire();
@@ -30,7 +30,7 @@ public:
 };
 
 void Map::initializeBunks() {
-    this->bunks = new Bunk*[this->width];
+    this->cells = new Cell*[this->width];
 
     auto* biotopManager = BiotopeManager::getInstance();
 
@@ -38,22 +38,22 @@ void Map::initializeBunks() {
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
 
     for (int x = 0; x < this->width; x++) {
-        this->bunks[x] = new Bunk[this->height];
+        this->cells[x] = new Cell[this->height];
         for (int y = 0; y < this->height; y++) {
-            auto& bunk = this->bunks[x][y];
+            auto& cell = this->cells[x][y];
 
-            bunk.setX(x);
-            bunk.setY(y);
+            cell.setX(x);
+            cell.setY(y);
 
             auto num = dist(rnd);
             if (num < 0.6) {
-                bunk.setBiotope(biotopManager->getBiotop(Biotopes::MEADOW));
+                cell.setBiotope(biotopManager->getBiotop(Biotopes::MEADOW));
             } else if (num < 0.8) {
-                bunk.setBiotope(biotopManager->getBiotop(Biotopes::FOREST));
+                cell.setBiotope(biotopManager->getBiotop(Biotopes::FOREST));
             } else if (num < 0.95) {
-                bunk.setBiotope(biotopManager->getBiotop(Biotopes::WATER));
+                cell.setBiotope(biotopManager->getBiotop(Biotopes::WATER));
             } else {
-                bunk.setBiotope(biotopManager->getBiotop(Biotopes::STONE));
+                cell.setBiotope(biotopManager->getBiotop(Biotopes::STONE));
             }
         }
     }
@@ -67,8 +67,8 @@ int Map::getHeight() const {
     return this->height;
 }
 
-Bunk** Map::getBunks() const {
-    return this->bunks;
+Cell** Map::getCells() const {
+    return this->cells;
 }
 
 void Map::print() {
@@ -76,7 +76,7 @@ void Map::print() {
     for (int y = 0; y < this->height; y++) {
         std::cout << "| ";
         for (int x = 0; x < this->width; x++) {
-            auto& bunk = this->bunks[x][y];
+            auto& bunk = this->cells[x][y];
             bunk.printMap();
             std::cout << " ";
         }
@@ -85,10 +85,10 @@ void Map::print() {
 }
 
 void Map::spreadFire() {
-    std::vector<Bunk*> bunksOnFire;
+    std::vector<Cell*> bunksOnFire;
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
-            auto& bunk = this->bunks[x][y];
+            auto& bunk = this->cells[x][y];
             if (bunk.getIsOnFire()) {
                 bunksOnFire.push_back(&bunk);
             }
@@ -110,7 +110,7 @@ void Map::spreadFire() {
                     continue;
                 }
 
-                auto& bunkXY = this->bunks[x][y];
+                auto& bunkXY = this->cells[x][y];
                 bunkXY.setIsOnFire(true);
             }
         }

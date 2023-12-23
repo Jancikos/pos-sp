@@ -99,7 +99,7 @@ void Simulation::makeFirstStep() {
 
     int x = distWidth(rnd);
     int y = distHeight(rnd);
-    this->map->getBunks()[x][y].setIsOnFire(true);
+    this->map->getCells()[x][y].setIsOnFire(true);
 
 //    vypiseme mapu
     this->print();

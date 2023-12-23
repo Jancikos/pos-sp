@@ -2,20 +2,20 @@
 // Created by Ján Kostor on 22.12.2023.
 //
 
-#ifndef POS_SP_BUNK_H
-#define POS_SP_BUNK_H
+#ifndef POS_SP_CELL_H
+#define POS_SP_CELL_H
 
 #include "Biotope.h"
 
-class Bunk {
+class Cell {
 protected:
     int x = 0, y = 0;
     Biotope* biotope = nullptr;
     bool isOnFire = false;
 
 public:
-    Bunk() = default;
-    Bunk(int x, int y, Biotope* biotope) : x(x), y(y), biotope(biotope) {};
+    Cell() = default;
+    Cell(int x, int y, Biotope* biotope) : x(x), y(y), biotope(biotope) {};
     int getX() const;
     int getY() const;
     Biotope* getBiotope() const;
@@ -27,31 +27,31 @@ public:
     void printMap();
 };
 
-int Bunk::getX() const {
+int Cell::getX() const {
     return this->x;
 }
 
-int Bunk::getY() const {
+int Cell::getY() const {
     return this->y;
 }
 
-Biotope* Bunk::getBiotope() const {
+Biotope* Cell::getBiotope() const {
     return this->biotope;
 }
 
-void Bunk::setBiotope(Biotope* biotope) {
+void Cell::setBiotope(Biotope* biotope) {
     this->biotope = biotope;
 }
 
-void Bunk::setX(int x) {
+void Cell::setX(int x) {
     this->x = x;
 }
 
-void Bunk::setY(int y) {
+void Cell::setY(int y) {
     this->y = y;
 }
 
-void Bunk::printMap() {
+void Cell::printMap() {
     char biotopeCode = this->biotope->getCode();
 
     if (this->isOnFire) {
@@ -63,13 +63,13 @@ void Bunk::printMap() {
     std::cout << biotopeCode;
 }
 
-void Bunk::setIsOnFire(bool isOnFire) {
+void Cell::setIsOnFire(bool isOnFire) {
     this->isOnFire = isOnFire;
 }
 
-bool Bunk::getIsOnFire() const {
+bool Cell::getIsOnFire() const {
     return this->isOnFire;
 }
 
 
-#endif //POS_SP_BUNK_H
+#endif //POS_SP_CELL_H
