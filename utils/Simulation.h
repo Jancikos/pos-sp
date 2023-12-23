@@ -38,6 +38,8 @@ public:
 
     void print();
 
+    void setWindTypeManually();
+
     void setWindType();
 
     void addFireManualy();
@@ -73,7 +75,7 @@ void Simulation::run() {
                     break;
                 case MainMenuOptions::CHANGE_WIND:
                     std::cout << "Changing wind" << std::endl;
-                    this->setWindType();
+                    this->setWindTypeManually();
                     continueUserEdit = false;
                     break;
                 case MainMenuOptions::EXIT:
@@ -92,8 +94,8 @@ void Simulation::run() {
 void Simulation::makeStep() {
     std::cout << std::endl;
 
-//      TODO - zmenime smer vetra
-
+    //      zmenime smer vetra
+    this->setWindType();
 
 //      rozsirime poziar
     this->map->spreadFire(this->windType);
@@ -105,9 +107,6 @@ void Simulation::makeStep() {
 }
 
 void Simulation::makeFirstStep() {
-
-//    inicializacia vetra
-    this->setWindType();
 
 //    inicializacia poziaru
     std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
@@ -132,7 +131,7 @@ void Simulation::print() {
     this->time++;
 }
 
-void Simulation::setWindType() {
+void Simulation::setWindTypeManually() {
     Options windMenu;
     windMenu.addOption(WindType::NONE, "None");
     windMenu.addOption(WindType::NORTH, "North");
@@ -146,22 +145,34 @@ void Simulation::setWindType() {
 }
 
 void Simulation::addFireManualy() {
-    std::cout << "Zadaj suradnice bunky, kde chces pridat poziar" << std::endl;
-    std::cout << "X: ";
-    int x;
-    std::cin >> x;
-    std::cout << "Y: ";
-    int y;
-    std::cin >> y;
+    bool continueUserEdit = true;
+    do {
+        int x = 0, y = 0;
+        std::cout << "Zadaj suradnice bunky, kde chces pridat ohen: " << std::endl;
+        std::cin >> x >> y;
 
-    if (this->map->isOutOfMap(x, y)) {
-        std::cout << "Zadane suradnice su mimo mapy" << std::endl;
-        return;
-    }
+        if (this->map->isOutOfMap(x, y)) {
+            std::cout << "Zadane suradnice su mimo mapy" << std::endl;
+            continue;
+        }
 
-    this->map->getCells()[x][y].setIsOnFire(true);
+        this->map->getCells()[x][y].setIsOnFire(true);
 
-    this->makeStep();
+        this->print();
+
+        std::cout << "Chces pridat dalsi ohen? (ano/nie)" << std::endl;
+        std::string answer;
+        std::cin >> answer;
+        if (answer == "nie") {
+            continueUserEdit = false;
+        }
+    } while (continueUserEdit);
+}
+
+void Simulation::setWindType() {
+
+// TODO - implementovat zmenu smeru vetra
+
 }
 
 #endif //POS_SP_SIMULATION_H
