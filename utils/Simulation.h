@@ -61,12 +61,8 @@ void Simulation::run() {
             }
         } while (continueUserEdit);
     }
-
-
 }
 
-while(option != MainMenuOptions::EXIT);
-}
 
 void Simulation::makeStep() {
     std::cout << std::endl;

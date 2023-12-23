@@ -13,12 +13,23 @@
 class Option
 {
 //    TODO: pridat getter pre id a title
-public:
+private:
     const int id;
     const std::string title;
+public:
+    int getId() const;
+    std::string getTitle();
 
     Option(const int id, const std::string title) : id(id), title(title) {}
 };
+
+int Option::getId() const {
+    return this->id;
+}
+
+std::string Option::getTitle() {
+    return this->title;
+}
 
 class Options
 {
@@ -41,10 +52,10 @@ public:
 
     bool hasOptions() const
     {
-        return options.size() > 0;
+        return !options.empty();
     }
 
-    int getOptionCLI(std::string question, bool checkForMinMax = true)
+    int getOptionCLI(const std::string& question, bool checkForMinMax = true)
     {
         std::cout << std::endl << question << std::endl;
 
@@ -53,23 +64,23 @@ public:
         while (it != end)
         {
             auto option = *(*it);
-            std::cout << "\t" << option.id << " - " << option.title << std::endl;
+            std::cout << "\t" << option.getId() << " - " << option.getTitle() << std::endl;
             ++it;
         }
 
-        int min = this->options.at(0)->id;
-        int max = this->options.at(this->options.size() - 1)->id;
+        int min = this->options.at(0)->getId();
+        int max = this->options.at(this->options.size() - 1)->getId();
         if (checkForMinMax)
         {
             for (auto option : this->options)
             {
-                if (option->id < min)
+                if (option->getId() < min)
                 {
-                    min = option->id;
+                    min = option->getId();
                 }
-                if (option->id > max)
+                if (option->getId() > max)
                 {
-                    max = option->id;
+                    max = option->getId();
                 }
             }
         }
