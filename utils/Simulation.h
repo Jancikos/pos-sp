@@ -27,8 +27,9 @@ public:
     void makeStep();
 
     enum MainMenuOptions {
-        MAKE_STEP = 1,
-        EXIT = 2
+        MAKE_STEP,
+        ADD_FIRE,
+        EXIT
     };
 };
 
@@ -36,6 +37,7 @@ void Simulation::run() {
     int option = 0;
     Options mainMenu;
     mainMenu.addOption(MainMenuOptions::MAKE_STEP, "Make step");
+    mainMenu.addOption(MainMenuOptions::ADD_FIRE, "Add fire");
     mainMenu.addOption(MainMenuOptions::EXIT, "Exit");
 
     do {
@@ -45,17 +47,21 @@ void Simulation::run() {
 
         this->makeStep();
 
-        option = mainMenu.getOptionCLI("Co dalej?");
-        bool continueUserEdit = false;
+        bool continueUserEdit = true;
         do {
+            option = mainMenu.getOptionCLI("Co dalej?");
             switch (option) {
+                case MainMenuOptions::ADD_FIRE:
+                    std::cout << "Adding fire" << std::endl;
+                    makeFirstStep();
+                    break;
                 case MainMenuOptions::MAKE_STEP:
                     std::cout << "Making step" << std::endl;
-                    continueUserEdit = true;
+                    continueUserEdit = false;
                     break;
                 case MainMenuOptions::EXIT:
                     std::cout << "Exiting" << std::endl;
-                    continueUserEdit = true;
+                    continueUserEdit = false;
                     break;
                 default:
                     std::cout << "Neplatna volba" << std::endl;
