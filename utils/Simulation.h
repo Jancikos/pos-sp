@@ -31,6 +31,8 @@ public:
         ADD_FIRE,
         EXIT
     };
+
+    void print();
 };
 
 void Simulation::run() {
@@ -43,6 +45,7 @@ void Simulation::run() {
     do {
         if (this->time == 0) {
             this->makeFirstStep();
+            continue;
         }
 
         this->makeStep();
@@ -76,12 +79,11 @@ void Simulation::makeStep() {
     std::cout << std::endl;
 
 //      rozsirime poziar
+    this->map->spreadFire();
 
 
 //      vypiseme mapu
-    std::cout << "Time: " << this->time << std::endl;
-    this->map->print();
-    this->time++;
+    this->print();
 
     std::cout << std::endl;
 }
@@ -98,6 +100,16 @@ void Simulation::makeFirstStep() {
     int x = distWidth(rnd);
     int y = distHeight(rnd);
     this->map->getBunks()[x][y].setIsOnFire(true);
+
+//    vypiseme mapu
+    this->print();
+    std::cout << std::endl;
+}
+
+void Simulation::print() {
+    std::cout << "Time: " << this->time << std::endl;
+    this->map->print();
+    this->time++;
 }
 
 

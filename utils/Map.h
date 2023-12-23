@@ -23,6 +23,10 @@ public:
     int getHeight() const;
     Bunk** getBunks() const;
     void print();
+
+    void spreadFire();
+
+    bool isOutOfMap(int x, int y);
 };
 
 void Map::initializeBunks() {
@@ -78,6 +82,43 @@ void Map::print() {
         }
         std::cout << "|" << std::endl;
     }
+}
+
+void Map::spreadFire() {
+    std::vector<Bunk*> bunksOnFire;
+    for (int x = 0; x < this->width; x++) {
+        for (int y = 0; y < this->height; y++) {
+            auto& bunk = this->bunks[x][y];
+            if (bunk.getIsOnFire()) {
+                bunksOnFire.push_back(&bunk);
+            }
+        }
+    }
+
+    for (auto* bunk : bunksOnFire) {
+        for (int xOffset = -1; xOffset <= 1; xOffset++) {
+            for (int yOffset = -1; yOffset <= 1; yOffset++) {
+                if (xOffset == 0 && yOffset == 0) {
+                    continue;
+                }
+                if (xOffset != 0 && yOffset != 0) {
+                    continue;
+                }
+                int x = bunk->getX() + xOffset;
+                int y = bunk->getY() + yOffset;
+                if (this->isOutOfMap(x, y)) {
+                    continue;
+                }
+
+                auto& bunkXY = this->bunks[x][y];
+                bunkXY.setIsOnFire(true);
+            }
+        }
+    }
+}
+
+bool Map::isOutOfMap(int x, int y) {
+    return x < 0 || x >= this->width || y < 0 || y >= this->height;
 }
 
 #endif //POS_SP_MAP_H
