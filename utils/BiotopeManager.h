@@ -50,10 +50,10 @@ BiotopeManager *BiotopeManager::getInstance() {
 void BiotopeManager::initializeBiotypes() {
     biotypes = new Biotope*[Biotopes::COUNT];
 
-    biotypes[Biotopes::MEADOW] = new Biotope("Meadow", 'M', true);
-    biotypes[Biotopes::FOREST] = new Biotope("Forest", 'F', true);
-    biotypes[Biotopes::WATER] = new Biotope("Water", 'W', false);
-    biotypes[Biotopes::STONE] = new Biotope("Stone", 'S', false);
+    biotypes[Biotopes::MEADOW] = new Biotope("Meadow", "█", true);
+    biotypes[Biotopes::FOREST] = new Biotope("Forest", "█", true);
+    biotypes[Biotopes::WATER] = new Biotope("Water", "█", false);
+    biotypes[Biotopes::STONE] = new Biotope("Stone", "█", false);
 }
 
 Biotope** BiotopeManager::getBiotops() {

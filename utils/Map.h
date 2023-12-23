@@ -77,13 +77,11 @@ Cell** Map::getCells() const {
 void Map::print() {
     std::cout << "Map: " << this->width << "x" << this->height << std::endl;
     for (int y = 0; y < this->height; y++) {
-        std::cout << "| ";
         for (int x = 0; x < this->width; x++) {
-            auto& bunk = this->cells[x][y];
-            bunk.printMap();
-            std::cout << " ";
+            auto& cell = this->cells[x][y];
+            cell.printMap();
         }
-        std::cout << "|" << std::endl;
+        std::cout << std::endl;
     }
 }
 

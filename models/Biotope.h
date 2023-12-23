@@ -12,20 +12,20 @@
 class Biotope {
 private:
     std::string title;
-    char code;
+    std::string code;
     bool isFlammable;
 
 public:
-    Biotope(std::string title, char code, bool isFlammable) : title(title), code(code), isFlammable(isFlammable) {};
+    Biotope(std::string title, std::string code, bool isFlammable) : title(title), code(code), isFlammable(isFlammable) {};
     std::string getTitle() {
         return this->title;
     }
-    char getCode() const;
+    std::string getCode() const;
     bool getIsFlammable() const;
     void print();
 };
 
-char Biotope::getCode() const {
+std::string Biotope::getCode() const {
     return this->code;
 }
 

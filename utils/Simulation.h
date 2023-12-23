@@ -20,7 +20,7 @@ private:
 public:
     Simulation(int width, int height) {
         this->map = new Map(width, height);
-        this->windType = WindType::SOUTH;
+        this->windType = WindType::NONE;
     }
 
     void run();
@@ -32,11 +32,15 @@ public:
     enum MainMenuOptions {
         MAKE_STEP,
         ADD_FIRE,
-        CHANGE_WIND, // todo
+        CHANGE_WIND,
         EXIT
     };
 
     void print();
+
+    void setWindType();
+
+    void addFireManualy();
 };
 
 void Simulation::run() {
@@ -44,6 +48,7 @@ void Simulation::run() {
     Options mainMenu;
     mainMenu.addOption(MainMenuOptions::MAKE_STEP, "Make step");
     mainMenu.addOption(MainMenuOptions::ADD_FIRE, "Add fire");
+    mainMenu.addOption(MainMenuOptions::CHANGE_WIND, "Change wind");
     mainMenu.addOption(MainMenuOptions::EXIT, "Exit");
 
     do {
@@ -60,11 +65,15 @@ void Simulation::run() {
             switch (option) {
                 case MainMenuOptions::ADD_FIRE:
                     std::cout << "Adding fire" << std::endl;
-                    // todo: add fire manualy - na definovanu poziciu
-                    makeFirstStep();
+                    this->addFireManualy();
                     break;
                 case MainMenuOptions::MAKE_STEP:
                     std::cout << "Making step" << std::endl;
+                    continueUserEdit = false;
+                    break;
+                case MainMenuOptions::CHANGE_WIND:
+                    std::cout << "Changing wind" << std::endl;
+                    this->setWindType();
                     continueUserEdit = false;
                     break;
                 case MainMenuOptions::EXIT:
@@ -97,7 +106,8 @@ void Simulation::makeStep() {
 
 void Simulation::makeFirstStep() {
 
-//    TODO - inicializacia vetra
+//    inicializacia vetra
+    this->setWindType();
 
 //    inicializacia poziaru
     std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
@@ -122,5 +132,36 @@ void Simulation::print() {
     this->time++;
 }
 
+void Simulation::setWindType() {
+    Options windMenu;
+    windMenu.addOption(WindType::NONE, "None");
+    windMenu.addOption(WindType::NORTH, "North");
+    windMenu.addOption(WindType::EAST, "East");
+    windMenu.addOption(WindType::SOUTH, "South");
+    windMenu.addOption(WindType::WEST, "West");
+
+    std::cout << "Vietor: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
+    int option = windMenu.getOptionCLI("Zvol smer vetra:");
+    this->windType = static_cast<WindType>(option);
+}
+
+void Simulation::addFireManualy() {
+    std::cout << "Zadaj suradnice bunky, kde chces pridat poziar" << std::endl;
+    std::cout << "X: ";
+    int x;
+    std::cin >> x;
+    std::cout << "Y: ";
+    int y;
+    std::cin >> y;
+
+    if (this->map->isOutOfMap(x, y)) {
+        std::cout << "Zadane suradnice su mimo mapy" << std::endl;
+        return;
+    }
+
+    this->map->getCells()[x][y].setIsOnFire(true);
+
+    this->makeStep();
+}
 
 #endif //POS_SP_SIMULATION_H

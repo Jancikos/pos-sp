@@ -6,8 +6,8 @@
 int main() {
     std::cout << "Hello, simulation poziaru!" << std::endl << std::endl;
 
-    int width = 10;
-    int height = 5;
+    int width = 65;
+    int height = 12;
 //    std::cout << "Zadaj sirku a vysku mapy: " << std::endl;
 //    std::cin >> width >> height;
 
