@@ -7,6 +7,8 @@
 
 #include "Map.h"
 #include "Options.h"
+#include <random>
+#include <chrono>
 
 class Simulation {
 private:
@@ -60,7 +62,7 @@ void Simulation::run() {
                     break;
             }
         } while (continueUserEdit);
-    }
+    } while (option != MainMenuOptions::EXIT);
 }
 
 
@@ -81,8 +83,15 @@ void Simulation::makeStep() {
 void Simulation::makeFirstStep() {
 
 //    inicializacia poziaru
-    // todo - zmenit na nahodne bunky v nasom rozsahu
-    this->map->getBunks()[1][1].setIsOnFire(true);
+    std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
+    std::uniform_int_distribution<int> distHeight(0, this->map->getHeight() - 1);
+
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine rnd(seed);
+
+    int x = distWidth(rnd);
+    int y = distHeight(rnd);
+    this->map->getBunks()[x][y].setIsOnFire(true);
 }
 
 
