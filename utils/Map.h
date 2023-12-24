@@ -90,7 +90,7 @@ void Map::spreadFire(WindType windType) {
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
             auto& bunk = this->cells[x][y];
-            if (bunk.getIsOnFire()) {
+            if (bunk.isOnFire()) {
                 bunksOnFire.push_back(&bunk);
             }
         }

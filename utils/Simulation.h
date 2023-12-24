@@ -69,13 +69,13 @@ void Simulation::run() {
                     std::cout << "Adding fire" << std::endl;
                     this->addFireManualy();
                     break;
-                case MainMenuOptions::MAKE_STEP:
-                    std::cout << "Making step" << std::endl;
-                    continueUserEdit = false;
-                    break;
                 case MainMenuOptions::CHANGE_WIND:
                     std::cout << "Changing wind" << std::endl;
                     this->setWindTypeManually();
+                    std::cout << "New actual wind: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
+                    break;
+                case MainMenuOptions::MAKE_STEP:
+                    std::cout << "Making step" << std::endl;
                     continueUserEdit = false;
                     break;
                 case MainMenuOptions::EXIT:
@@ -102,12 +102,12 @@ void Simulation::makeStep() {
 
 //      vypiseme mapu
     this->print();
+    this->time++;
 
     std::cout << std::endl;
 }
 
 void Simulation::makeFirstStep() {
-
 //    inicializacia poziaru
     std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
     std::uniform_int_distribution<int> distHeight(0, this->map->getHeight() - 1);
@@ -115,12 +115,22 @@ void Simulation::makeFirstStep() {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine rnd(seed);
 
-    int x = distWidth(rnd);
-    int y = distHeight(rnd);
-    this->map->getCells()[x][y].setIsOnFire(true);
+    do {
+        int x = distWidth(rnd);
+        int y = distHeight(rnd);
+
+        if (!this->map->getCells()[x][y].getBiotope()->isFlammable()) {
+            continue;
+        }
+
+        this->map->getCells()[x][y].setIsOnFire(true);
+        break;
+    } while (true);
 
 //    vypiseme mapu
     this->print();
+
+    this->time++;
     std::cout << std::endl;
 }
 
@@ -128,24 +138,23 @@ void Simulation::print() {
     std::cout << "Time: " << this->time << std::endl;
     std::cout << "Wind: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
     this->map->print();
-    this->time++;
 }
 
 void Simulation::setWindTypeManually() {
+    auto* windManager = WindManager::getInstance();
     Options windMenu;
-    windMenu.addOption(WindType::NONE, "None");
-    windMenu.addOption(WindType::NORTH, "North");
-    windMenu.addOption(WindType::EAST, "East");
-    windMenu.addOption(WindType::SOUTH, "South");
-    windMenu.addOption(WindType::WEST, "West");
+    windMenu.addOption(WindType::NONE, windManager->getWindTypeTitle(WindType::NONE));
+    windMenu.addOption(WindType::NORTH, windManager->getWindTypeTitle(WindType::NORTH));
+    windMenu.addOption(WindType::EAST, windManager->getWindTypeTitle(WindType::EAST));
+    windMenu.addOption(WindType::SOUTH, windManager->getWindTypeTitle(WindType::SOUTH));
+    windMenu.addOption(WindType::WEST, windManager->getWindTypeTitle(WindType::WEST));
 
-    std::cout << "Vietor: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
+    std::cout << "Actual wind: " << windManager->getWindTypeTitle(this->windType) << std::endl;
     int option = windMenu.getOptionCLI("Zvol smer vetra:");
     this->windType = static_cast<WindType>(option);
 }
 
 void Simulation::addFireManualy() {
-    bool continueUserEdit = true;
     do {
         int x = 0, y = 0;
         std::cout << "Zadaj suradnice bunky, kde chces pridat ohen: " << std::endl;
@@ -156,17 +165,19 @@ void Simulation::addFireManualy() {
             continue;
         }
 
-        this->map->getCells()[x][y].setIsOnFire(true);
-
-        this->print();
-
-        std::cout << "Chces pridat dalsi ohen? (ano/nie)" << std::endl;
-        std::string answer;
-        std::cin >> answer;
-        if (answer == "nie") {
-            continueUserEdit = false;
+        if (!this->map->getCells()[x][y].getBiotope()->isFlammable()) {
+            std::cout << "Bunka nemoze horiet" << std::endl;
+            continue;
         }
-    } while (continueUserEdit);
+
+        if (this->map->getCells()[x][y].isOnFire()) {
+            std::cout << "Bunka je uz hori" << std::endl;
+            continue;
+        }
+
+        this->map->getCells()[x][y].setIsOnFire(true);
+        break;
+    } while (true);
 }
 
 void Simulation::setWindType() {
