@@ -10,6 +10,7 @@
 #include "WindManager.h"
 #include <random>
 #include <chrono>
+#include <thread>
 
 class Simulation {
 private:
@@ -35,6 +36,7 @@ public:
 
     enum MainMenuOptions {
         MAKE_STEP,
+        MAKE_N_STEPS,
         ADD_FIRE,
         CHANGE_WIND,
         EXIT
@@ -47,12 +49,15 @@ public:
     void changeWindType();
 
     void addFireManualy();
+
+    void makeNSteps();
 };
 
 void Simulation::run() {
     int option = 0;
     Options mainMenu;
     mainMenu.addOption(MainMenuOptions::MAKE_STEP, "Make step");
+    mainMenu.addOption(MainMenuOptions::MAKE_N_STEPS, "Make n steps");
     mainMenu.addOption(MainMenuOptions::ADD_FIRE, "Add fire");
     mainMenu.addOption(MainMenuOptions::CHANGE_WIND, "Change wind");
     mainMenu.addOption(MainMenuOptions::EXIT, "Exit");
@@ -81,6 +86,10 @@ void Simulation::run() {
                 case MainMenuOptions::MAKE_STEP:
                     std::cout << "Making step" << std::endl;
                     continueUserEdit = false;
+                    break;
+                case MainMenuOptions::MAKE_N_STEPS:
+                    std::cout << "Making n steps" << std::endl;
+                    this->makeNSteps();
                     break;
                 case MainMenuOptions::EXIT:
                     std::cout << "Exiting" << std::endl;
@@ -200,6 +209,21 @@ void Simulation::changeWindType() {
 
     int option = distWindType(this->rnd);
     this->windType = static_cast<WindType>(option);
+}
+
+void Simulation::makeNSteps() {
+    int n = 0;
+    std::cout << "Enter steps count: " << std::endl;
+    std::cin >> n;
+    std::cout <<  std::endl;
+
+
+    for (int i = 0; i < n; i++) {
+        this->makeStep();
+//        sleep for 1 second
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
 }
 
 #endif //POS_SP_SIMULATION_H
