@@ -13,13 +13,17 @@
 
 class Simulation {
 private:
+    std::default_random_engine rnd;
     WindType windType;
     Map *map;
     long long time = 0;
+    long long lastWindChange = 0;
 
 public:
-    Simulation(int width, int height) {
+    Simulation(int width, int height, unsigned long seed) : rnd(seed) {
         this->map = new Map(width, height);
+        this->map->initializeBunks(this->rnd);
+
         this->windType = WindType::NONE;
     }
 
@@ -40,7 +44,7 @@ public:
 
     void setWindTypeManually();
 
-    void setWindType();
+    void changeWindType();
 
     void addFireManualy();
 };
@@ -95,10 +99,10 @@ void Simulation::makeStep() {
     std::cout << std::endl;
 
     //      zmenime smer vetra
-    this->setWindType();
+    this->changeWindType();
 
 //      rozsirime poziar
-    this->map->spreadFire(this->windType);
+    this->map->spreadFire(this->windType, this->rnd);
 
 //      vypiseme mapu
     this->print();
@@ -113,11 +117,10 @@ void Simulation::makeFirstStep() {
     std::uniform_int_distribution<int> distHeight(0, this->map->getHeight() - 1);
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine rnd(seed);
 
     do {
-        int x = distWidth(rnd);
-        int y = distHeight(rnd);
+        int x = distWidth(this->rnd);
+        int y = distHeight(this->rnd);
 
         if (!this->map->getCells()[x][y].getBiotope()->isFlammable()) {
             continue;
@@ -180,10 +183,23 @@ void Simulation::addFireManualy() {
     } while (true);
 }
 
-void Simulation::setWindType() {
+void Simulation::changeWindType() {
+    if (this->windType != WindType::NONE) {
+        if (this->time - this->lastWindChange < 3) {
+            return;
+        }
+    }
+    static std::uniform_real_distribution<double> distWind(0, 1);
+    if (distWind(this->rnd) < 0.9) {
+        this->windType = WindType::NONE;
+        return;
+    }
 
-// TODO - implementovat zmenu smeru vetra
+    this->lastWindChange = this->time;
+    static std::uniform_int_distribution<int> distWindType(1, 4);
 
+    int option = distWindType(this->rnd);
+    this->windType = static_cast<WindType>(option);
 }
 
 #endif //POS_SP_SIMULATION_H

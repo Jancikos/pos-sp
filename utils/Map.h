@@ -18,26 +18,23 @@ private:
     Cell** cells;
 
 public:
-    Map(int width, int height) : width(width), height(height) {
-        this->initializeBunks();
-    };
-    void initializeBunks();
+    Map(int width, int height) : width(width), height(height) { };
+    void initializeBunks(std::default_random_engine &rnd);
     int getWidth() const;
     int getHeight() const;
     Cell** getCells() const;
     void print();
 
-    void spreadFire(WindType windType);
+    void spreadFire(WindType windType, std::default_random_engine &rnd);
 
     bool isOutOfMap(int x, int y);
 };
 
-void Map::initializeBunks() {
+void Map::initializeBunks(std::default_random_engine &rnd) {
     this->cells = new Cell*[this->width];
 
     auto* biotopManager = BiotopeManager::getInstance();
 
-    static std::default_random_engine rnd;
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
 
     for (int x = 0; x < this->width; x++) {
@@ -85,11 +82,12 @@ void Map::print() {
     }
 }
 
-void Map::spreadFire(WindType windType) {
+void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
     std::vector<Cell*> bunksOnFire;
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
             auto& bunk = this->cells[x][y];
+
             if (bunk.isOnFire()) {
                 bunksOnFire.push_back(&bunk);
             }
@@ -97,8 +95,6 @@ void Map::spreadFire(WindType windType) {
     }
 
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine rnd(seed);
     auto windManager = WindManager::getInstance();
 
     for (auto* bunk : bunksOnFire) {

@@ -12,7 +12,6 @@
 
 class Option
 {
-//    TODO: pridat getter pre id a title
 private:
     const int id;
     const std::string title;
