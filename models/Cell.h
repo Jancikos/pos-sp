@@ -60,31 +60,7 @@ void Cell::printMap() {
         return;
     }
 
-    if (this->biotope->getTitle() == "Water") {
-        // print it in blue
-        std::cout << "\033[1;34m" << biotopeCode << "\033[0m";
-        return;
-    }
-
-    if (this->biotope->getTitle() == "Stone") {
-        // print it in light gray
-        std::cout << "\033[1;37m" << biotopeCode << "\033[0m";
-        return;
-    }
-
-    if (this->biotope->getTitle() == "Forest") {
-        // print it in dark green
-        std::cout << "\033[1;32m" << biotopeCode << "\033[0m";
-        return;
-    }
-
-    if (this->biotope->getTitle() == "Meadow") {
-        // print it in light green
-        std::cout << "\033[1;92m" << biotopeCode << "\033[0m";
-        return;
-    }
-
-    std::cout << biotopeCode;
+    std::cout << "\033[" << this->biotope->getColor() << "m" << biotopeCode << "\033[0m";
 }
 
 void Cell::setIsOnFire(bool isOnFire) {
