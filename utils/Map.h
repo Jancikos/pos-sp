@@ -116,6 +116,13 @@ void Map::spreadFire(WindType windType) {
                     continue;
                 }
 
+                auto& bunkXY = this->cells[x][y];
+
+                // bunk is not flammable
+                if (!bunkXY.getBiotope()->isFlammable()) {
+                    continue;
+                }
+
                 double pOfFireSpread = windManager->probabilityOfSpreadingFire(windType, xOffset, yOffset);
 
                 // bunk is not on fire
@@ -123,7 +130,6 @@ void Map::spreadFire(WindType windType) {
                     continue;
                 }
 
-                auto& bunkXY = this->cells[x][y];
                 bunkXY.setIsOnFire(true);
             }
         }
