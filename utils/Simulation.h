@@ -163,6 +163,7 @@ void Simulation::setWindTypeManually() {
 
     std::cout << "Actual wind: " << windManager->getWindTypeTitle(this->windType) << std::endl;
     int option = windMenu.getOptionCLI("Zvol smer vetra:");
+    this->lastWindChange = this->time;
     this->windType = static_cast<WindType>(option);
 }
 
@@ -183,7 +184,7 @@ void Simulation::addFireManualy() {
         }
 
         if (this->map->getCells()[x][y].isOnFire()) {
-            std::cout << "Bunka je uz hori" << std::endl;
+            std::cout << "Bunka uz hori" << std::endl;
             continue;
         }
 
