@@ -50,6 +50,8 @@ public:
 
     void addFireManualy();
 
+    void changeMeadowToForest();
+
     void makeNSteps();
 };
 
@@ -107,13 +109,16 @@ void Simulation::run() {
 void Simulation::makeStep() {
     std::cout << std::endl;
 
-    //      zmenime smer vetra
+    // zmenime smer vetra
     this->changeWindType();
 
-//      rozsirime poziar
+    // rozsirime poziar
     this->map->spreadFire(this->windType, this->rnd);
 
-//      vypiseme mapu
+    // luka sa zmeni na les
+    this->changeMeadowToForest();
+
+    // vypiseme mapu
     this->print();
     this->time++;
 
@@ -225,6 +230,43 @@ void Simulation::makeNSteps() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
+}
+
+void Simulation::changeMeadowToForest() {
+    static std::uniform_real_distribution<double> dist(0.0, 1.0);
+    for (int x = 0; x < this->map->getWidth(); x++) {
+        for (int y = 0; y < this->map->getHeight(); y++) {
+            auto& cell = this->map->getCells()[x][y];
+            if (cell.getBiotope()->getTitle() == "Meadow") {
+                int forestCount = 0;
+                for (int xOffset = -1; xOffset <= 1; xOffset++) {
+                    for (int yOffset = -1; yOffset <= 1; yOffset++) {
+                        if (xOffset == 0 && yOffset == 0) {
+                            continue;
+                        }
+                        if (xOffset != 0 && yOffset != 0) {
+                            continue;
+                        }
+                        int xCor = cell.getX() + xOffset;
+                        int yCor = cell.getY() + yOffset;
+                        if (this->map->isOutOfMap(xCor, yCor)) {
+                            continue;
+                        }
+
+                        auto& bunkXY = this->map->getCells()[xCor][yCor];
+
+                        if (bunkXY.getBiotope()->getTitle() != "Forest") {
+                            continue;
+                        }
+                        forestCount++;
+                    }
+                }
+                if (forestCount > 0 && dist(this->rnd) < 0.02) {
+                    cell.setBiotope(BiotopeManager::getInstance()->getBiotop(Biotopes::FOREST));
+                }
+            }
+        }
+    }
 }
 
 #endif //POS_SP_SIMULATION_H
