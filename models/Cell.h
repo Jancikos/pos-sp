@@ -12,6 +12,8 @@ protected:
     int x = 0, y = 0;
     Biotope* biotope = nullptr;
     bool onFire = false;
+    bool burnt = false;
+    int onFireTimes = 0;
 
 public:
     Cell() = default;
@@ -24,6 +26,10 @@ public:
     void setY(int y);
     void setIsOnFire(bool isOnFire);
     bool isOnFire() const;
+    void setIsBurnt(bool isBurnt);
+    bool isBurnt() const;
+    int getOnFireTimes() const;
+    void setOnFireTimes(int fireTimes);
     void printMap();
 };
 
@@ -54,6 +60,12 @@ void Cell::setY(int y) {
 void Cell::printMap() {
     std::string biotopeCode = this->biotope->getCode();
 
+    if (this->burnt) {
+        // print it in dark purple
+        std::cout << "\033[38;5;53m" << biotopeCode << "\033[0m";
+        return;
+    }
+
     if (this->onFire) {
         // print it in red
         std::cout << "\033[1;31m" << biotopeCode << "\033[0m";
@@ -69,6 +81,22 @@ void Cell::setIsOnFire(bool isOnFire) {
 
 bool Cell::isOnFire() const {
     return this->onFire;
+}
+
+void Cell::setIsBurnt(bool isBurnt) {
+    this->burnt = isBurnt;
+}
+
+bool Cell::isBurnt() const {
+    return this->burnt;
+}
+
+int Cell::getOnFireTimes() const {
+    return this->onFireTimes;
+}
+
+void Cell::setOnFireTimes(int fireTimes) {
+    this->onFireTimes = fireTimes;
 }
 
 

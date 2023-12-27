@@ -86,10 +86,10 @@ void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
     std::vector<Cell*> bunksOnFire;
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
-            auto& bunk = this->cells[x][y];
+            auto& cell = this->cells[x][y];
 
-            if (bunk.isOnFire()) {
-                bunksOnFire.push_back(&bunk);
+            if (cell.isOnFire()) {
+                bunksOnFire.push_back(&cell);
             }
         }
     }
@@ -97,7 +97,7 @@ void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
     auto windManager = WindManager::getInstance();
 
-    for (auto* bunk : bunksOnFire) {
+    for (auto* cell : bunksOnFire) {
         for (int xOffset = -1; xOffset <= 1; xOffset++) {
             for (int yOffset = -1; yOffset <= 1; yOffset++) {
                 if (xOffset == 0 && yOffset == 0) {
@@ -106,22 +106,27 @@ void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
                 if (xOffset != 0 && yOffset != 0) {
                     continue;
                 }
-                int x = bunk->getX() + xOffset;
-                int y = bunk->getY() + yOffset;
+                int x = cell->getX() + xOffset;
+                int y = cell->getY() + yOffset;
                 if (this->isOutOfMap(x, y)) {
                     continue;
                 }
 
                 auto& bunkXY = this->cells[x][y];
 
-                // bunk is not flammable
+                // if cell is burnt, skip it
+                if (bunkXY.isBurnt()) {
+                    continue;
+                }
+
+                // cell is not flammable
                 if (!bunkXY.getBiotope()->isFlammable()) {
                     continue;
                 }
 
                 double pOfFireSpread = windManager->probabilityOfSpreadingFire(windType, xOffset, yOffset);
 
-                // bunk is not on fire
+                // cell is not on fire
                 if (dist(rnd) > pOfFireSpread) {
                     continue;
                 }
