@@ -57,6 +57,8 @@ public:
     void changeMeadowToForest();
 
     void makeNSteps();
+
+    void initFire();
 };
 
 void Simulation::run() {
@@ -117,7 +119,11 @@ void Simulation::makeStep() {
     this->changeWindType();
 
     // rozsirime poziar
-    this->map->spreadFire(this->windType, this->rnd);
+    if (this->time == 1) {
+        this->initFire();
+    } else {
+        this->map->spreadFire(this->windType, this->rnd);
+    }
 
     // bunky, ktore horia viac ako 10 kol, sa spalia
     this->changeOnFireToBurnt();
@@ -136,24 +142,6 @@ void Simulation::makeStep() {
 }
 
 void Simulation::makeFirstStep() {
-//    inicializacia poziaru
-    std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
-    std::uniform_int_distribution<int> distHeight(0, this->map->getHeight() - 1);
-
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-
-    do {
-        int x = distWidth(this->rnd);
-        int y = distHeight(this->rnd);
-
-        if (!this->map->getCells()[x][y].getBiotope()->isFlammable()) {
-            continue;
-        }
-
-        this->map->getCells()[x][y].setIsOnFire(true);
-        break;
-    } while (true);
-
     // vypiseme mapu
     this->print();
 
@@ -338,6 +326,24 @@ void Simulation::changeBurntToMeadow() {
         }
     }
 
+}
+
+void Simulation::initFire() {
+    //    inicializacia poziaru
+    std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
+    std::uniform_int_distribution<int> distHeight(0, this->map->getHeight() - 1);
+
+    do {
+        int x = distWidth(this->rnd);
+        int y = distHeight(this->rnd);
+
+        if (!this->map->getCells()[x][y].getBiotope()->isFlammable()) {
+            continue;
+        }
+
+        this->map->getCells()[x][y].setIsOnFire(true);
+        break;
+    } while (true);
 }
 
 #endif //POS_SP_SIMULATION_H
