@@ -19,7 +19,7 @@ public:
         }
 
         while (true) {
-            std::cout << "Zadajte cislo od " << min << " do " << max << ": ";
+            std::cout << "Enter number from " << min << " to " << max << ": ";
             std::cin >> input;
 
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -31,7 +31,7 @@ public:
             }
 
             if (failed || input < min || input > max) {
-                std::cout << "Nespravny vstup. Skus znovu." << std::endl;
+                std::cout << "Invalid input. Try again." << std::endl;
             } else {
                 return input;
             }

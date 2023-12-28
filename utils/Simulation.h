@@ -93,31 +93,31 @@ void Simulation::run() {
 
         bool continueUserEdit = true;
         do {
-            option = mainMenu.getOptionCLI("Co dalej?");
+            option = mainMenu.getOptionCLI("What do you want to do?");
             switch (option) {
                 case MainMenuOptions::ADD_FIRE:
-                    std::cout << "Adding fire" << std::endl;
+                    std::cout << "Add fire manually" << std::endl;
                     this->addFireManualy();
                     break;
                 case MainMenuOptions::CHANGE_WIND:
-                    std::cout << "Changing wind" << std::endl;
+                    std::cout << "Change wind manually" << std::endl;
                     this->setWindTypeManually();
                     std::cout << "New actual wind: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
                     break;
                 case MainMenuOptions::MAKE_STEP:
-                    std::cout << "Making step" << std::endl;
+                    std::cout << "Make a step" << std::endl;
                     continueUserEdit = false;
                     break;
                 case MainMenuOptions::MAKE_N_STEPS:
-                    std::cout << "Making n steps" << std::endl;
+                    std::cout << "Make n steps" << std::endl;
                     this->makeNSteps();
                     break;
                 case MainMenuOptions::EXIT:
-                    std::cout << "Exiting" << std::endl;
+                    std::cout << "Exit" << std::endl;
                     continueUserEdit = false;
                     break;
                 default:
-                    std::cout << "Neplatna volba" << std::endl;
+                    std::cout << "Invalid option" << std::endl;
                     break;
             }
         } while (continueUserEdit);
@@ -178,7 +178,7 @@ void Simulation::setWindTypeManually() {
     windMenu.addOption(WindType::WEST, windManager->getWindTypeTitle(WindType::WEST));
 
     std::cout << "Actual wind: " << windManager->getWindTypeTitle(this->windType) << std::endl;
-    int option = windMenu.getOptionCLI("Zvol smer vetra:");
+    int option = windMenu.getOptionCLI("Choose new wind type");
     this->lastWindChange = this->time;
     this->windType = static_cast<WindType>(option);
 }
@@ -186,21 +186,21 @@ void Simulation::setWindTypeManually() {
 void Simulation::addFireManualy() {
     do {
         int x = 0, y = 0;
-        std::cout << "Zadaj suradnice bunky, kde chces pridat ohen: " << std::endl;
+        std::cout << "Enter x and y coordinates for cell you want to set on fire: " << std::endl;
         std::cin >> x >> y;
 
         if (this->map->isOutOfMap(x, y)) {
-            std::cout << "Zadane suradnice su mimo mapy" << std::endl;
+            std::cout << "Entered coordinates are out of map" << std::endl;
             continue;
         }
 
         if (!this->map->getCells()[x][y].getBiotope()->isFlammable()) {
-            std::cout << "Bunka nemoze horiet" << std::endl;
+            std::cout << "Cell is not flammable" << std::endl;
             continue;
         }
 
         if (this->map->getCells()[x][y].isOnFire()) {
-            std::cout << "Bunka uz hori" << std::endl;
+            std::cout << "Cell is already on fire" << std::endl;
             continue;
         }
 
