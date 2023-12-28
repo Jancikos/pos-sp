@@ -8,6 +8,7 @@
 #include "Map.h"
 #include "Options.h"
 #include "WindManager.h"
+#include "../models/SimulationCsvRecord.h"
 #include <random>
 #include <chrono>
 #include <thread>
@@ -15,29 +16,26 @@
 class Simulation {
 private:
     std::default_random_engine rnd;
+    unsigned long seed;
     WindType windType;
     Map *map;
     long long time = 0;
     long long lastWindChange = 0;
     std::string nazov;
 
+    void warmup(int repCount);
 public:
+    Simulation(SimulationCsvRecord record) : Simulation(record.getTitle(), record.getWidth(), record.getHeight(), record.getSeed(), record.getTime()) { };
+
     Simulation(std::string nazov, int width, int height, unsigned long seed, int pocetIteracii) : rnd(seed) {
-        if (pocetIteracii == 0) {
-            this->map = new Map(width, height);
-            this->map->initializeBunks(this->rnd);
-            this->windType = WindType::NONE;
-            this->nazov = nazov;
-        } else {
-            this->map = new Map(width, height);
-            this->map->initializeBunks(this->rnd);
-            this->windType = WindType::NONE;
-            this->initFire();
-            this->time = pocetIteracii;
-            for (int i = 0; i < pocetIteracii; i++) {
-                this->makeStep();
-            }
-            this->nazov = nazov;
+        this->nazov = nazov;
+        this->seed = seed;
+        this->windType = WindType::NONE;
+        this->map = new Map(width, height);
+        this->map->initializeBunks(this->rnd);
+
+        if (pocetIteracii > 0) {
+            this->warmup(pocetIteracii);
         }
     }
 
@@ -72,6 +70,8 @@ public:
     void makeNSteps();
 
     void initFire();
+
+    SimulationCsvRecord toCsvRecord();
 };
 
 void Simulation::run() {
@@ -357,6 +357,19 @@ void Simulation::initFire() {
         this->map->getCells()[x][y].setIsOnFire(true);
         break;
     } while (true);
+}
+
+void Simulation::warmup(int repCount) {
+    this->time = 1;
+    this->initFire();
+
+    for (int i = 0; i < repCount; i++) {
+        this->makeStep();
+    }
+}
+
+SimulationCsvRecord Simulation::toCsvRecord() {
+    return SimulationCsvRecord(this->nazov, this->seed, this->map->getWidth(), this->map->getHeight(), this->time);
 }
 
 #endif //POS_SP_SIMULATION_H
