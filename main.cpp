@@ -4,19 +4,17 @@
 #include "utils/Simulation.h"
 #include "utils/SimulationCsvLoader.h"
 
-// todo UI prelozit do ANJ
-int main() {
-    std::cout << "Hello, simulation poziaru!" << std::endl << std::endl;
 
+int main() {
     SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
 //    SimulationCsvLoader loader("./data/simulations.csv");
     SimulationCsvRecord simulationCsvRecord;
 
     Options nacitanie;
-    std::cout << "Chcete nacitat mapu zo suboru?" << std::endl;
-    nacitanie.addOption(1, "ano");
-    nacitanie.addOption(2, "nie");
-    int result = nacitanie.getOptionCLI("Zadajte cislo moznosti: ");
+    std::cout << "Do you want to load map from server?" << std::endl;
+    nacitanie.addOption(1, "yes");
+    nacitanie.addOption(2, "no");
+    int result = nacitanie.getOptionCLI("Enter number of your choice: ");
     switch (result) {
         case 1: {
             // ulozene simulacie
@@ -26,25 +24,23 @@ int main() {
             }
 
             // tu sa nacita simulacia zo suboru
-            std::string simTitle = Helper::readLineFromConsole("Enter sim title: ");
+            std::string simTitle = Helper::readLineFromConsole("Enter simulation title: ");
             simulationCsvRecord = loader.getByTitle(simTitle);
             break;
         }
         case 2:
             // tu sa vytvori nova simulacia
 
-            // todo zadavat to z konzoly
-            simulationCsvRecord.setTitle("test");
+            std::cout << "Enter simulation title: " << std::endl;
+            std::string title;
+            std::cin >> title;
+            simulationCsvRecord.setTitle(title);
             simulationCsvRecord.setSeed(std::chrono::system_clock::now().time_since_epoch().count());
-            simulationCsvRecord.setWidth(65);
-            simulationCsvRecord.setHeight(12);
-
-
-            //    std::cout << "Zadaj sirku a vysku mapy: " << std::endl;
-            //    std::cin >> width >> height;
-            //    std::cout << "Zadaj nazov mapy: " << std::endl;
-            //    std::cin >> nazov;
-            //    seed = std::chrono::system_clock::now().time_since_epoch().count();
+            std::cout << "Enter map width and height: " << std::endl;
+            int width, height;
+            std::cin >> width >> height;
+            simulationCsvRecord.setWidth(width);
+            simulationCsvRecord.setHeight(height);
             break;
     }
 
@@ -53,9 +49,9 @@ int main() {
 
     // ask for save
     Options options;
-    options.addOption(1, "ano");
-    options.addOption(2, "nie");
-    int saveResult = options.getOptionCLI("Chcete ulozit simulaciu do suboru? ");
+    options.addOption(1, "yes");
+    options.addOption(2, "no");
+    int saveResult = options.getOptionCLI("Do you want to save simulation?");
 
     if (saveResult == 1) {
         loader.addSimulationRecord(simulation.toCsvRecord());
