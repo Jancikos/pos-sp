@@ -61,12 +61,6 @@ public:
 
     void addFireManualy();
 
-    void changeOnFireToBurnt();
-
-    void changeBurntToMeadow();
-
-    void changeMeadowToForest();
-
     void makeNSteps();
 
     void initFire();
@@ -139,13 +133,13 @@ void Simulation::makeStep() {
     }
 
     // bunky, ktore horia viac ako 10 kol, sa spalia
-    this->changeOnFireToBurnt();
+    this->map->changeOnFireToBurnt(this->rnd);
 
     // spalene bunky sa zmenia na luku
-    this->changeBurntToMeadow();
+    this->map->changeBurntToMeadow(this->rnd);
 
     // luka sa zmeni na les
-    this->changeMeadowToForest();
+    this->map->changeMeadowToForest(this->rnd);
 
     // vypiseme mapu
     this->print();
@@ -239,104 +233,6 @@ void Simulation::makeNSteps() {
         this->makeStep();
 //        sleep for 1 second
         std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-}
-
-void Simulation::changeMeadowToForest() {
-    static std::uniform_real_distribution<double> dist(0.0, 1.0);
-    for (int x = 0; x < this->map->getWidth(); x++) {
-        for (int y = 0; y < this->map->getHeight(); y++) {
-            auto& cell = this->map->getCells()[x][y];
-            if (cell.getBiotope()->getTitle() == "Meadow") {
-                int forestCount = 0;
-                for (int xOffset = -1; xOffset <= 1; xOffset++) {
-                    for (int yOffset = -1; yOffset <= 1; yOffset++) {
-                        if (xOffset == 0 && yOffset == 0) {
-                            continue;
-                        }
-                        if (xOffset != 0 && yOffset != 0) {
-                            continue;
-                        }
-                        int xCor = cell.getX() + xOffset;
-                        int yCor = cell.getY() + yOffset;
-                        if (this->map->isOutOfMap(xCor, yCor)) {
-                            continue;
-                        }
-
-                        auto& bunkXY = this->map->getCells()[xCor][yCor];
-
-                        if (bunkXY.getBiotope()->getTitle() != "Forest") {
-                            continue;
-                        }
-                        forestCount++;
-                    }
-                }
-                if (forestCount > 0 && dist(this->rnd) < 0.02) {
-                    cell.setBiotope(BiotopeManager::getInstance()->getBiotop(Biotopes::FOREST));
-                }
-            }
-        }
-    }
-}
-
-void Simulation::changeOnFireToBurnt() {
-    std::vector<Cell*> bunksOnFire;
-    for (int x = 0; x < this->map->getWidth(); x++) {
-        for (int y = 0; y < this->map->getHeight(); y++) {
-            auto& cell = this->map->getCells()[x][y];
-
-            if (cell.isOnFire()) {
-                bunksOnFire.push_back(&cell);
-                cell.setOnFireTimes(cell.getOnFireTimes() + 1);
-            }
-        }
-    }
-
-    for (auto* cell : bunksOnFire) {
-        if (cell->getOnFireTimes() > 10) {
-            cell->setIsBurnt(true);
-            cell->setIsOnFire(false);
-            cell->setOnFireTimes(0);
-        }
-    }
-}
-
-void Simulation::changeBurntToMeadow() {
-    static std::uniform_real_distribution<double> dist(0.0, 1.0);
-    for (int x = 0; x < this->map->getWidth(); x++) {
-        for (int y = 0; y < this->map->getHeight(); y++) {
-            auto& cell = this->map->getCells()[x][y];
-            if (cell.isBurnt()) {
-                int waterCount = 0;
-                for (int xOffset = -1; xOffset <= 1; xOffset++) {
-                    for (int yOffset = -1; yOffset <= 1; yOffset++) {
-                        if (xOffset == 0 && yOffset == 0) {
-                            continue;
-                        }
-                        if (xOffset != 0 && yOffset != 0) {
-                            continue;
-                        }
-                        int xCor = cell.getX() + xOffset;
-                        int yCor = cell.getY() + yOffset;
-                        if (this->map->isOutOfMap(xCor, yCor)) {
-                            continue;
-                        }
-
-                        auto& bunkXY = this->map->getCells()[xCor][yCor];
-
-                        if (bunkXY.getBiotope()->getTitle() != "Water") {
-                            continue;
-                        }
-                        waterCount++;
-                    }
-                }
-                if (waterCount > 0 && dist(this->rnd) < 0.1) {
-                    cell.setBiotope(BiotopeManager::getInstance()->getBiotop(Biotopes::MEADOW));
-                    cell.setIsBurnt(false);
-                }
-            }
-        }
     }
 
 }
