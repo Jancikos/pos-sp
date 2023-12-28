@@ -33,10 +33,10 @@ public:
             this->map->initializeBunks(this->rnd);
             this->windType = WindType::NONE;
             this->initFire();
+            this->time = pocetIteracii;
             for (int i = 0; i < pocetIteracii; i++) {
                 this->makeStep();
             }
-            this->time = pocetIteracii;
             this->nazov = nazov;
         }
     }

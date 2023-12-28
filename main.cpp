@@ -26,6 +26,9 @@ int main() {
             // tu sa vygeneruje nova mapa
             //    std::cout << "Zadaj sirku a vysku mapy: " << std::endl;
             //    std::cin >> width >> height;
+            //    std::cout << "Zadaj nazov mapy: " << std::endl;
+            //    std::cin >> nazov;
+            //    seed = std::chrono::system_clock::now().time_since_epoch().count();
             break;
         default:
             std::cout << "Zadali ste zlu moznost" << std::endl;
