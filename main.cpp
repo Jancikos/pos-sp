@@ -10,8 +10,27 @@ int main() {
     unsigned seed = 1608314400;
     int width = 65;
     int height = 12;
-//    std::cout << "Zadaj sirku a vysku mapy: " << std::endl;
-//    std::cin >> width >> height;
+    std::string nazov;
+
+
+    Options nacitanie;
+    std::cout << "Chcete nacitat mapu zo suboru?" << std::endl;
+    nacitanie.addOption(1, "ano");
+    nacitanie.addOption(2, "nie");
+    int odpoved = nacitanie.getOptionCLI("Zadajte cislo moznosti: ");
+    switch (odpoved) {
+        case 1:
+            // tu sa nacita mapa zo suboru
+            break;
+        case 2:
+            // tu sa vygeneruje nova mapa
+            //    std::cout << "Zadaj sirku a vysku mapy: " << std::endl;
+            //    std::cin >> width >> height;
+            break;
+        default:
+            std::cout << "Zadali ste zlu moznost" << std::endl;
+            break;
+    }
 
     Simulation simulation(width, height, seed);
     simulation.run();
