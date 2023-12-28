@@ -19,13 +19,26 @@ private:
     Map *map;
     long long time = 0;
     long long lastWindChange = 0;
+    std::string nazov;
 
 public:
-    Simulation(int width, int height, unsigned long seed) : rnd(seed) {
-        this->map = new Map(width, height);
-        this->map->initializeBunks(this->rnd);
-
-        this->windType = WindType::NONE;
+    Simulation(std::string nazov, int width, int height, unsigned long seed, int pocetIteracii) : rnd(seed) {
+        if (pocetIteracii == 0) {
+            this->map = new Map(width, height);
+            this->map->initializeBunks(this->rnd);
+            this->windType = WindType::NONE;
+            this->nazov = nazov;
+        } else {
+            this->map = new Map(width, height);
+            this->map->initializeBunks(this->rnd);
+            this->windType = WindType::NONE;
+            this->initFire();
+            for (int i = 0; i < pocetIteracii; i++) {
+                this->makeStep();
+            }
+            this->time = pocetIteracii;
+            this->nazov = nazov;
+        }
     }
 
     void run();

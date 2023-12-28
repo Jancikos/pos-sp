@@ -11,7 +11,7 @@ int main() {
     int width = 65;
     int height = 12;
     std::string nazov;
-
+    int pocetIteracii = 0;
 
     Options nacitanie;
     std::cout << "Chcete nacitat mapu zo suboru?" << std::endl;
@@ -32,7 +32,7 @@ int main() {
             break;
     }
 
-    Simulation simulation(width, height, seed);
+    Simulation simulation(nazov, width, height, seed, pocetIteracii);
     simulation.run();
 
     return 0;
