@@ -51,7 +51,7 @@ public:
     static std::string readLineFromConsole(std::string message) {
         std::string line;
 
-        std::cout << message << ": ";
+        std::cout << message;
         std::getline(std::cin, line);
 
         return line;

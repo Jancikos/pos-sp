@@ -90,24 +90,24 @@ void Simulation::run() {
             option = mainMenu.getOptionCLI("What do you want to do?");
             switch (option) {
                 case MainMenuOptions::ADD_FIRE:
-                    std::cout << "Add fire manually" << std::endl;
+                    std::cout << "Adding fire manually" << std::endl;
                     this->addFireManualy();
                     break;
                 case MainMenuOptions::CHANGE_WIND:
-                    std::cout << "Change wind manually" << std::endl;
+                    std::cout << "Changing wind manually" << std::endl;
                     this->setWindTypeManually();
                     std::cout << "New actual wind: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
                     break;
                 case MainMenuOptions::MAKE_STEP:
-                    std::cout << "Make a step" << std::endl;
+                    std::cout << "Making a step" << std::endl;
                     continueUserEdit = false;
                     break;
                 case MainMenuOptions::MAKE_N_STEPS:
-                    std::cout << "Make n steps" << std::endl;
+                    std::cout << "Making n steps" << std::endl;
                     this->makeNSteps();
                     break;
                 case MainMenuOptions::EXIT:
-                    std::cout << "Exit" << std::endl;
+                    std::cout << "Exiting" << std::endl;
                     continueUserEdit = false;
                     break;
                 default:
@@ -257,7 +257,6 @@ void Simulation::initFire() {
 
 void Simulation::warmup(int repCount) {
     this->time = 1;
-    this->initFire();
 
     for (int i = 0; i < repCount; i++) {
         this->makeStep();
