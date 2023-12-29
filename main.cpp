@@ -3,9 +3,13 @@
 #include "utils/Map.h"
 #include "utils/Simulation.h"
 #include "utils/SimulationCsvLoader.h"
+#include "utils/MySocketServer.h"
 
 
 int main() {
+    return MySocketServer::run(2956);
+
+
     SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
 //    SimulationCsvLoader loader("./data/simulations.csv");
     SimulationCsvRecord simulationCsvRecord;
