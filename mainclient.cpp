@@ -10,6 +10,9 @@
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
+    std::cout << "Hello, World! CLIENT" << std::endl;
+    return 0;
+
     int sockfd, n;
     struct sockaddr_in serv_addr{};
     struct hostent* server;
