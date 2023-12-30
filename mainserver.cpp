@@ -7,9 +7,6 @@
 
 
 int main() {
-    std::cout << "Hello, World! SERVEERER" << std::endl;
-    return 0;
-
     return MySocketServer::run(2956);
 
 
