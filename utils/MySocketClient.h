@@ -19,6 +19,7 @@ public:
 };
 
 int MySocketClient::run(int argc, char **argv) {
+    // create socket
     int sockfd, n;
     struct sockaddr_in serv_addr{};
     struct hostent *server;
@@ -56,6 +57,7 @@ int MySocketClient::run(int argc, char **argv) {
         return 4;
     }
 
+    // tu sa pripravi loader a ak je to potrebne, tak sa nacita simulacia zo suboru
     SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
     // SimulationCsvLoader loader("./data/simulations.csv");
     SimulationCsvRecord simulationCsvRecord;
@@ -68,13 +70,14 @@ int MySocketClient::run(int argc, char **argv) {
 
     switch (result) {
         case 1: {
-            // ulozene simulacie
+            // ulozene simulacie sa vypisu
             for (auto const& [key, simulationCsvRecord] : loader.getSimulationRecords())
             {
                 std::cout << key << std::endl;
             }
 
             // tu sa nacita simulacia zo suboru
+            // posli nazov simulacie na server
             std::string simTitle = Helper::readLineFromConsole("Enter simulation title: ");
             // poslem spravu na server
             strcpy(buffer, simTitle.c_str());
@@ -83,7 +86,8 @@ int MySocketClient::run(int argc, char **argv) {
                 perror("Error writing to socket");
                 return 5;
             }
-            // precitam spravu a parsnem ju do simulationCsvRecord
+
+            // precitam spravu od servera a parsnem ju do simulationCsvRecord
             bzero(buffer, 256);
             n = read(sockfd, buffer, 255);
             if (n < 0) {
@@ -131,6 +135,7 @@ int MySocketClient::run(int argc, char **argv) {
                 return 5;
             }
 
+            // vypytam si potrebne udaje od uzivatela a vytvorim novu simulaciu
             std::cout << "Enter simulation title: " << std::endl;
             std::string title;
             std::cin >> title;
@@ -144,6 +149,7 @@ int MySocketClient::run(int argc, char **argv) {
             break;
     }
 
+    // tu zbehne simulacia
     Simulation simulation(simulationCsvRecord);
     simulation.run();
 
@@ -154,7 +160,7 @@ int MySocketClient::run(int argc, char **argv) {
     int saveResult = options.getOptionCLI("Do you want to save simulation?");
 
     if (saveResult == 1) {
-        // change saveResult to string
+        // posli spravu na server, ze chcem ulozit simulaciu
         std::string resultSave = "save";
         strcpy(buffer, resultSave.c_str());
         n = write(sockfd, buffer, strlen(buffer));
@@ -163,7 +169,7 @@ int MySocketClient::run(int argc, char **argv) {
             return 5;
         }
 
-        // read if the server is ready to receive simulation
+        // precitam spravu od servera, ze je ready na prijatie simulacie
         bzero(buffer, 256);
         n = read(sockfd, buffer, 255);
         if (n < 0) {
@@ -171,7 +177,7 @@ int MySocketClient::run(int argc, char **argv) {
             return 6;
         }
 
-        // get toString from simulation and send it to server
+        // simulacia sa posle na server
         simulationCsvRecord = simulation.toCsvRecord();
         std::string simulationString = simulationCsvRecord.toCsv();
         strcpy(buffer, simulationString.c_str());
@@ -182,6 +188,7 @@ int MySocketClient::run(int argc, char **argv) {
         }
     }
 
+    // zatvorim socket
     close(sockfd);
 
     return 0;

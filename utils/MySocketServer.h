@@ -50,7 +50,7 @@ int MySocketServer::run(int port) {
     }
 
     // listen na sockete
-    std::cout << "Listening on port " << port << ", cakam kym sa niekto pripoji" << std::endl;
+    std::cout << "Listening on port " << port << ", waiting for client to connect" << std::endl;
     listen(sockfd, 5);
     cli_len = sizeof(cli_addr);
 
@@ -61,12 +61,12 @@ int MySocketServer::run(int port) {
         perror("ERROR on accept");
         return 3;
     }
-    std::cout << "Pripojil sa klient a potvrdil som jeho pripojenie" << std::endl;
+    std::cout << "Client connected" << std::endl;
 
     bzero(buffer,256);
 
     // citanie zo socketu
-    std::cout << "Cakam na spravu od klienta" << std::endl;
+    std::cout << "Waiting for client to send map title" << std::endl;
     n = read(newsockfd, buffer, 255);
     if (n < 0)
     {
@@ -81,7 +81,7 @@ int MySocketServer::run(int port) {
         SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
         SimulationCsvRecord simulationCsvRecord = loader.getByTitle(mapTitle);
         // zapis do socketu
-        std::cout << "Posielam spravu klientovi" << std::endl;
+        std::cout << "Sending simulation info to client" << std::endl;
         std::cout << simulationCsvRecord.toCsv() << std::endl;
 
         std::string msgStr = simulationCsvRecord.toCsv();
@@ -94,6 +94,7 @@ int MySocketServer::run(int port) {
         }
     }
 
+    // precitam zo soketu ci chce klient ulozit simulaciu
     bzero(buffer,256);
     n = read(newsockfd, buffer, 255);
     if (n < 0)
@@ -106,7 +107,7 @@ int MySocketServer::run(int port) {
     if (strcmp(buffer, "save") == 0)
     {
         // server sends info that it is ready to receive simulation
-        std::cout << "Posielam spravu klientovi" << std::endl;
+        std::cout << "Sending ready message to client" << std::endl;
         std::string msgStr = "ready";
         const char* msg = msgStr.c_str();
         n = write(newsockfd, msg, strlen(msg)+1);
@@ -116,6 +117,7 @@ int MySocketServer::run(int port) {
             return 5;
         }
 
+        // server reads simulation from socket
         std::cout << "Client wants to save simulation" << std::endl;
         bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
@@ -124,6 +126,8 @@ int MySocketServer::run(int port) {
             perror("Error reading from socket");
             return 6;
         }
+
+        // parse the simulation from buffer and save it to csv
         SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
         SimulationCsvRecord simulationCsvRecord;
 
@@ -161,7 +165,7 @@ int MySocketServer::run(int port) {
     }
 
     // zatvorenie socketov
-    std::cout << "Zatvaram sockety" << std::endl;
+    std::cout << "Closing sockets" << std::endl;
     close(newsockfd);
     close(sockfd);
 
