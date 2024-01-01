@@ -22,11 +22,11 @@ set(COMMON_SOURCES
 # Client executable
 add_executable(pos_sp_client
         ${COMMON_SOURCES}
-        mainclient.cpp
+        main_client.cpp
         )
 
 # Server executable
 add_executable(pos_sp_server
         ${COMMON_SOURCES}
-        mainserver.cpp
+        main_server.cpp
         )
