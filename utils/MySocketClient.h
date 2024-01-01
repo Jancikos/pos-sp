@@ -122,6 +122,14 @@ int MySocketClient::run(int argc, char **argv) {
         }
         case 2:
             // tu sa vytvori nova simulacia
+            // posli spravu na server, ze chcem vytvorit novu simulaciu
+            std::string simTitle = "new";
+            strcpy(buffer, simTitle.c_str());
+            n = write(sockfd, buffer, strlen(buffer));
+            if (n < 0) {
+                perror("Error writing to socket");
+                return 5;
+            }
 
             std::cout << "Enter simulation title: " << std::endl;
             std::string title;
@@ -146,8 +154,32 @@ int MySocketClient::run(int argc, char **argv) {
     int saveResult = options.getOptionCLI("Do you want to save simulation?");
 
     if (saveResult == 1) {
-        loader.addSimulationRecord(simulation.toCsvRecord());
-        loader.save();
+        // change saveResult to string
+        std::string resultSave = "save";
+        strcpy(buffer, resultSave.c_str());
+        n = write(sockfd, buffer, strlen(buffer));
+        if (n < 0) {
+            perror("Error writing to socket");
+            return 5;
+        }
+
+        // read if the server is ready to receive simulation
+        bzero(buffer, 256);
+        n = read(sockfd, buffer, 255);
+        if (n < 0) {
+            perror("Error reading from socket");
+            return 6;
+        }
+
+        // get toString from simulation and send it to server
+        simulationCsvRecord = simulation.toCsvRecord();
+        std::string simulationString = simulationCsvRecord.toCsv();
+        strcpy(buffer, simulationString.c_str());
+        n = write(sockfd, buffer, strlen(buffer));
+        if (n < 0) {
+            perror("Error writing to socket");
+            return 5;
+        }
     }
 
     close(sockfd);

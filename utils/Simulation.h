@@ -65,6 +65,8 @@ public:
 
     void initFire();
 
+    std::string toString();
+
     SimulationCsvRecord toCsvRecord();
 };
 
@@ -266,5 +268,12 @@ void Simulation::warmup(int repCount) {
 SimulationCsvRecord Simulation::toCsvRecord() {
     return SimulationCsvRecord(this->nazov, this->seed, this->map->getWidth(), this->map->getHeight(), this->time);
 }
+
+std::string Simulation::toString() {
+    std::string result = "";
+    result += this->nazov + ";" + std::to_string(this->seed) + ";" + std::to_string(this->map->getWidth()) + ";" + std::to_string(this->map->getHeight()) + ";" + std::to_string(this->time);
+    return result;
+}
+
 
 #endif //POS_SP_SIMULATION_H

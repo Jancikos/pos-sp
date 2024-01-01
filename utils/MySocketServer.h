@@ -74,25 +74,91 @@ int MySocketServer::run(int port) {
         return 4;
     }
     printf("Here is the message: %s\n", buffer);
-
-    // get maptitle from buffer (with \n at the end)
-    std::string mapTitle = buffer;
-    mapTitle = mapTitle.substr(0, mapTitle.size()-1);
-    SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
-    SimulationCsvRecord simulationCsvRecord = loader.getByTitle(mapTitle);
-
-    // zapis do socketu
-    std::cout << "Posielam spravu klientovi" << std::endl;
-
-    std::string msgStr = simulationCsvRecord.toCsv();
-    const char* msg = msgStr.c_str();
-    n = write(newsockfd, msg, strlen(msg)+1)    ;
-    if (n < 0)
+    if (strcmp(buffer, "new") != 0)
     {
-        perror("Error writing to socket");
-        return 5;
+        // get maptitle from buffer (with \n at the end)
+        std::string mapTitle = buffer;
+        SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
+        SimulationCsvRecord simulationCsvRecord = loader.getByTitle(mapTitle);
+        // zapis do socketu
+        std::cout << "Posielam spravu klientovi" << std::endl;
+        std::cout << simulationCsvRecord.toCsv() << std::endl;
+
+        std::string msgStr = simulationCsvRecord.toCsv();
+        const char* msg = msgStr.c_str();
+        n = write(newsockfd, msg, strlen(msg)+1)    ;
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
     }
 
+    bzero(buffer,256);
+    n = read(newsockfd, buffer, 255);
+    if (n < 0)
+    {
+        perror("Error reading from socket");
+        return 6;
+    }
+    std::cout << "buffer: " << buffer << std::endl;
+    // if it read "1", then it means that client wants to save simulation
+    if (strcmp(buffer, "save") == 0)
+    {
+        // server sends info that it is ready to receive simulation
+        std::cout << "Posielam spravu klientovi" << std::endl;
+        std::string msgStr = "ready";
+        const char* msg = msgStr.c_str();
+        n = write(newsockfd, msg, strlen(msg)+1);
+        if (n < 0)
+        {
+            perror("Error writing to socket");
+            return 5;
+        }
+
+        std::cout << "Client wants to save simulation" << std::endl;
+        bzero(buffer,256);
+        n = read(newsockfd, buffer, 255);
+        if (n < 0)
+        {
+            perror("Error reading from socket");
+            return 6;
+        }
+        SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
+        SimulationCsvRecord simulationCsvRecord;
+
+        std::string item;
+        int i = 0;
+        std::stringstream ss(buffer);
+        std::cout << "buffer: " << buffer << std::endl;
+        while (getline(ss, item, ';'))
+        {
+            switch (i)
+            {
+                case 0:
+                    simulationCsvRecord.setTitle(item);
+                    break;
+                case 1:
+                    simulationCsvRecord.setSeed(std::stoul(item));
+                    break;
+                case 2:
+                    simulationCsvRecord.setWidth(std::stoi(item));
+                    break;
+                case 3:
+                    simulationCsvRecord.setHeight(std::stoi(item));
+                    break;
+                case 4:
+                    simulationCsvRecord.setTime(std::stoul(item));
+                    break;
+                default:
+                    break;
+            }
+            i++;
+        }
+        loader.addSimulationRecord(simulationCsvRecord);
+        loader.save();
+        std::cout << "Simulation saved" << std::endl;
+    }
 
     // zatvorenie socketov
     std::cout << "Zatvaram sockety" << std::endl;
