@@ -25,6 +25,8 @@ enum ServerCommands : int {
     SAVE = 3
 };
 
+// @todo memory leaks skontrolovat
+// @todo makefile finish
 // @todo bool navratove hodnoty premenit na vynimky a odchytavat ich v maine
 class MySocketServer {
 private:
