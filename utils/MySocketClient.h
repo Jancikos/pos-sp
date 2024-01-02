@@ -107,11 +107,11 @@ int MySocketClient::run(std::string hostname, int port) {
     if (saveResult == 1) {
         // posli spravu na server, ze chcem ulozit simulaciu
         SimulationCsvRecord newSimulationCsvRecord = simulation.toCsvRecord();
-        std::string result = this->getFromSocket(sockfd, ServerCommands::SAVE, newSimulationCsvRecord.toCsv());
+        this->getFromSocket(sockfd, ServerCommands::SAVE, newSimulationCsvRecord.toCsv());
         std::cout << "Simulation saved" << std::endl;
     }
 
-//    this->getFromSocket(sockfd, ServerCommands::END);
+    this->getFromSocket(sockfd, ServerCommands::END);
 
     // zatvorim socket
     close(sockfd);
