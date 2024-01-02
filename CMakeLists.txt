@@ -31,3 +31,6 @@ add_executable(pos_sp_server
         ${COMMON_SOURCES}
         main_server.cpp
         )
+
+target_link_libraries(pos_sp_server pthread)
+target_link_libraries(pos_sp_client pthread)

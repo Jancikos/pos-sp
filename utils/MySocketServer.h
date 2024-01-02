@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <vector>
+#include <thread>
 #include "SimulationCsvLoader.h"
 
 enum ServerCommands : int {
@@ -81,7 +82,6 @@ int MySocketServer::run() {socklen_t cli_len;
         cli_len = sizeof(cli_addr);
         
         // potvrdenie spojenia s klientom
-        // todo od tohto miesta vytvorit novy thread
         newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
         if (newsockfd < 0)
         {
@@ -90,9 +90,8 @@ int MySocketServer::run() {socklen_t cli_len;
         }
 
         this->newsockfds.push_back(newsockfd);
-        // todo - pokrcuj v treade s novym socket id
-        std::cout << "Client connected" << std::endl;
-        this->manageSocket(newsockfd);
+        std::cout << "Client " << newsockfd << " connected" << std::endl;
+        auto* clientSocket = new std::thread(&MySocketServer::manageSocket, this, newsockfd);
     }
 
     close(sockfd);
@@ -136,6 +135,7 @@ bool MySocketServer::sendDataToClient(int sockfd, std::string data) {
 
 bool MySocketServer::saveSimulation(int sckfd, std::string csvRecordStr) {
     SimulationCsvRecord simulationCsvRecord(csvRecordStr);
+    // todo - kriticka oblast
     this->simulationLoader.addSimulationRecord(simulationCsvRecord);
 
     auto msg = "Simulation " + simulationCsvRecord.getTitle() + " saved";
@@ -171,25 +171,25 @@ int MySocketServer::manageSocket(int newsockfd) {
         bool ok = true;
         switch (command) {
             case ServerCommands::LIST:
-                std::cout << "Client wants to list simulations" << std::endl;
+                std::cout << "Client " << newsockfd << " wants to list simulations" << std::endl;
                 ok = this->sendSimulationsList(newsockfd);
                 break;
             case ServerCommands::LOAD:
-                std::cout << "Client wants to load simulation" << std::endl;
+                std::cout << "Client " << newsockfd << " wants to load simulation" << std::endl;
                 ok = this->sendSimulation(newsockfd, data);
                 break;
             case ServerCommands::SAVE:
-                std::cout << "Client wants to save simulation" << std::endl;
+                std::cout << "Client " << newsockfd << " wants to save simulation" << std::endl;
                 ok = this->saveSimulation(newsockfd, data);
                 break;
             default:
                 command = ServerCommands::END;
-                std::cout << "Client wants to end connection" << std::endl;
+                std::cout << "Client " << newsockfd << " wants to end connection" << std::endl;
                 break;
         }
 
         if (!ok) {
-            std::cout << "Error sending data to client" << std::endl;
+            std::cout << "Error sending data to client " << newsockfd << std::endl;
             return 5;
         }
     } while (command != ServerCommands::END);
