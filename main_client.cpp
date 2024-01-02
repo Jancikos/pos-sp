@@ -9,6 +9,7 @@
 #include "utils/MySocketClient.h"
 
 int main(int argc, char *argv[]) {
-    return MySocketClient::run(argc, argv);
+    MySocketClient client;
+    return client.run("localhost", 2956);
 }
 

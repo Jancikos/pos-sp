@@ -16,31 +16,19 @@
 
 class MySocketClient {
 public:
-    int run(int argc, char *argv[]);
+    int run(std::string hostname, int port);
 
 private:
     std::string getFromSocket(int sockfd, ServerCommands command, std::string data = "0");
 };
 
-int MySocketClient::run(int argc, char **argv) {
+int MySocketClient::run(std::string hostname, int port) {
     // create socket
     int sockfd, n;
     struct sockaddr_in serv_addr{};
-    struct hostent *server;
+    struct hostent *server = gethostbyname(hostname.c_str());
 
     char buffer[256];
-
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " hostname port\n";
-        return 1;
-    }
-
-    server = gethostbyname(argv[1]);
-    if (server == nullptr) {
-        std::cerr << "Error, no such host\n";
-        return 2;
-    }
-
     bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     bcopy(
@@ -48,7 +36,7 @@ int MySocketClient::run(int argc, char **argv) {
             (char *) &serv_addr.sin_addr.s_addr,
             server->h_length
     );
-    serv_addr.sin_port = htons(atoi(argv[2]));
+    serv_addr.sin_port = htons(port);
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {

@@ -168,6 +168,9 @@ bool MySocketServer::sendDataToClient(int sockfd, std::string data) {
         perror("Error writing to socket");
         return false;
     }
+
+    std::cout << "Message sent to client {" << data << "}" << std::endl;
+
     return true;
 }
 
