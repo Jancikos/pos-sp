@@ -6,6 +6,7 @@
 #define POS_SP_SIMULATIONCSVRECORD_H
 
 #include <string>
+#include <sstream>
 
 class SimulationCsvRecord {
 public:
@@ -19,6 +20,7 @@ private:
 
 public:
     SimulationCsvRecord() = default;
+    SimulationCsvRecord(std::string csvRecordStr);
     SimulationCsvRecord(std::string title, unsigned long seed, int width, int height, unsigned long time) : title(title), seed(seed), width(width), height(height), time(time) {};
     std::string getTitle() const;
     unsigned long getSeed() const;
@@ -81,6 +83,37 @@ std::string SimulationCsvRecord::toCsv() const {
     + std::to_string(this->width) + DELIMETER
     + std::to_string(this->height) + DELIMETER
     + std::to_string(this->time);
+}
+
+SimulationCsvRecord::SimulationCsvRecord(std::string csvRecordStr) {
+    std::string item;
+    int i = 0;
+    std::stringstream ss(csvRecordStr);
+    while (getline(ss, item, ';'))
+    {
+        bool ok = true;
+        switch (i)
+        {
+            case 0:
+                this->setTitle(item);
+                break;
+            case 1:
+                this->setSeed(std::stoul(item));
+                break;
+            case 2:
+                this->setWidth(std::stoi(item));
+                break;
+            case 3:
+                this->setHeight(std::stoi(item));
+                break;
+            case 4:
+                this->setTime(std::stoul(item));
+                break;
+            default:
+                break;
+        }
+        i++;
+    }
 }
 
 

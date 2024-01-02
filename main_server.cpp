@@ -2,5 +2,6 @@
 
 
 int main() {
-    return MySocketServer::run(2956);
+    MySocketServer server(2956, "/home/kostor/sp/simulations.csv");
+    return server.run();
 }
