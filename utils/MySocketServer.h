@@ -15,6 +15,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <mutex>
 #include "SimulationCsvLoader.h"
 
 enum ServerCommands : int {
@@ -31,6 +32,8 @@ private:
     int sockfd;
     std::vector<int> newsockfds;
     SimulationCsvLoader simulationLoader;
+
+    std::mutex mtx;
 
 public:
     MySocketServer(int port, std::string pathToCsv) : port(port), simulationLoader(pathToCsv) {
@@ -135,8 +138,16 @@ bool MySocketServer::sendDataToClient(int sockfd, std::string data) {
 
 bool MySocketServer::saveSimulation(int sckfd, std::string csvRecordStr) {
     SimulationCsvRecord simulationCsvRecord(csvRecordStr);
-    // todo - kriticka oblast
-    this->simulationLoader.addSimulationRecord(simulationCsvRecord);
+
+    std::cout << "Client " << sckfd << " wants to save simulation " << simulationCsvRecord.getTitle() << std::endl;
+    {
+        std::unique_lock<std::mutex> lck(this->mtx);
+        std::cout << "Client " << sckfd << " is saving simulation " << simulationCsvRecord.getTitle() << std::endl;
+        sleep(5); // iba pre demonstraciu
+        this->simulationLoader.addSimulationRecord(simulationCsvRecord);
+        std::cout << "Client " << sckfd << " saved simulation " << simulationCsvRecord.getTitle() << std::endl;
+        sleep(1);
+    }
 
     auto msg = "Simulation " + simulationCsvRecord.getTitle() + " saved";
     std::cout << msg << std::endl;
