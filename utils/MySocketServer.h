@@ -43,6 +43,8 @@ private:
     bool sendSimulationsList(int sockfd);
     bool sendSimulation(int sckfd, std::string simTitle);
     bool saveSimulation(int sckfd, std::string csvRecordStr);
+
+    int manageSocket(int newsockfd);
 };
 
 int MySocketServer::run() {socklen_t cli_len;
@@ -71,73 +73,28 @@ int MySocketServer::run() {socklen_t cli_len;
     }
 
     // listen na sockete
-    std::cout << "Listening on port " << port << ", waiting for client to connect" << std::endl;
+    std::cout << "Listening on port " << port << std::endl;
     listen(this->sockfd, 5);
     cli_len = sizeof(cli_addr);
 
-    // potvrdenie spojenia s klientom
-    // todo od tohto miesta vytvorit novy thread
-    newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
-    if (newsockfd < 0)
-    {
-        perror("ERROR on accept");
-        return 3;
-    }
-    std::cout << "Client connected" << std::endl;
+    while (true) {
+        std::cout << "Waiting for client to connect" << std::endl;
 
-    char buffer[256];
-
-    ServerCommands command;
-    std::string data;
-    // citanie zo socketu
-    do {
-        std::cout << "Waiting for client to send message" << std::endl;
-        bzero(buffer,256);
-        n = read(newsockfd, buffer, 255);
-        if (n < 0)
+        // potvrdenie spojenia s klientom
+        // todo od tohto miesta vytvorit novy thread
+        newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
+        if (newsockfd < 0)
         {
-            perror("Error reading from socket");
-            return 4;
-        }
-        printf("Here is the message: %s\n", buffer);
-
-        // split buffer into command and data (; as separator)
-        std::string bufferStr(buffer);
-        int pos = bufferStr.find(';');
-        command = static_cast<ServerCommands>(std::stoi(bufferStr.substr(0, pos)));
-        data = bufferStr.substr(pos + 1);
-
-        bool ok = false;
-        switch (command) {
-            case ServerCommands::LIST:
-                std::cout << "Client wants to list simulations" << std::endl;
-                ok = this->sendSimulationsList(newsockfd);
-                break;
-            case ServerCommands::LOAD:
-                std::cout << "Client wants to load simulation" << std::endl;
-                ok = this->sendSimulation(newsockfd, data);
-                break;
-            case ServerCommands::SAVE:
-                std::cout << "Client wants to save simulation" << std::endl;
-                ok = this->saveSimulation(newsockfd, data);
-                break;
-            default:
-                command = ServerCommands::END;
-                std::cout << "Client wants to end connection" << std::endl;
-                break;
+            perror("ERROR on accept");
+            return 3;
         }
 
-        if (!ok) {
-            std::cout << "Error sending data to client" << std::endl;
-            return 5;
-        }
-    } while (command != ServerCommands::END);
+        this->newsockfds.push_back(newsockfd);
+        // todo - pokrcuj v treade s novym socket id
+        std::cout << "Client connected" << std::endl;
+        this->manageSocket(newsockfd);
+    }
 
-
-    // zatvorenie socketov
-    // todo - zatvorit sockety az po prijati spravy na ukoncenie spojenia
-    std::cout << "Closing sockets" << std::endl;
-    close(newsockfd);
     close(sockfd);
 
     return 0;
@@ -185,6 +142,62 @@ bool MySocketServer::saveSimulation(int sckfd, std::string csvRecordStr) {
     std::cout << msg << std::endl;
 
     return this->sendDataToClient(sckfd, msg);
+}
+
+int MySocketServer::manageSocket(int newsockfd) {
+    int n;
+    char buffer[256];
+
+    ServerCommands command;
+    std::string data;
+    // citanie zo socketu
+    do {
+        std::cout << "Waiting for client to send message" << std::endl;
+        bzero(buffer,256);
+        n = read(newsockfd, buffer, 255);
+        if (n < 0)
+        {
+            perror("Error reading from socket");
+            return 4;
+        }
+        printf("Here is the message: %s\n", buffer);
+
+        // split buffer into command and data (; as separator)
+        std::string bufferStr(buffer);
+        int pos = bufferStr.find(';');
+        command = static_cast<ServerCommands>(std::stoi(bufferStr.substr(0, pos)));
+        data = bufferStr.substr(pos + 1);
+
+        bool ok = true;
+        switch (command) {
+            case ServerCommands::LIST:
+                std::cout << "Client wants to list simulations" << std::endl;
+                ok = this->sendSimulationsList(newsockfd);
+                break;
+            case ServerCommands::LOAD:
+                std::cout << "Client wants to load simulation" << std::endl;
+                ok = this->sendSimulation(newsockfd, data);
+                break;
+            case ServerCommands::SAVE:
+                std::cout << "Client wants to save simulation" << std::endl;
+                ok = this->saveSimulation(newsockfd, data);
+                break;
+            default:
+                command = ServerCommands::END;
+                std::cout << "Client wants to end connection" << std::endl;
+                break;
+        }
+
+        if (!ok) {
+            std::cout << "Error sending data to client" << std::endl;
+            return 5;
+        }
+    } while (command != ServerCommands::END);
+
+    // zatvorenie socketov
+    // todo - zatvorit sockety az po prijati spravy na ukoncenie spojenia
+    std::cout << "Closing socket" << std::endl;
+    close(newsockfd);
 }
 
 #endif //POS_SP_MYSOCKETSERVER_H

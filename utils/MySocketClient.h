@@ -20,6 +20,7 @@ public:
 
 private:
     std::string getFromSocket(int sockfd, ServerCommands command, std::string data = "0");
+    void sendToSocket(int sockfd, ServerCommands command, std::string data = "0");
 };
 
 int MySocketClient::run(std::string hostname, int port) {
@@ -111,7 +112,7 @@ int MySocketClient::run(std::string hostname, int port) {
         std::cout << "Simulation saved" << std::endl;
     }
 
-    this->getFromSocket(sockfd, ServerCommands::END);
+    this->sendToSocket(sockfd, ServerCommands::END);
 
     // zatvorim socket
     close(sockfd);
@@ -124,13 +125,7 @@ std::string MySocketClient::getFromSocket(int sockfd, ServerCommands command, st
     char buffer[256];
 
     // posli spravu na server, aby poslal naspat nieco
-    int commandValue = static_cast<int>(command);
-    std::string commandStr = std::to_string(commandValue) + ";" + data;
-    strcpy(buffer, commandStr.c_str());
-    n = write(sockfd, buffer, strlen(buffer) + 1);
-    if (n < 0) {
-        throw std::runtime_error("Error writing to socket (code 5)");
-    }
+    this->sendToSocket(sockfd, command, data);
 
     // precitam spravu od servera
     bzero(buffer, 256);
@@ -140,6 +135,20 @@ std::string MySocketClient::getFromSocket(int sockfd, ServerCommands command, st
     }
 
     return std::string(buffer);
+}
+
+void MySocketClient::sendToSocket(int sockfd, ServerCommands command, std::string data) {
+    int n;
+    char buffer[256];
+
+    // posli spravu na server, aby poslal naspat nieco
+    int commandValue = static_cast<int>(command);
+    std::string commandStr = std::to_string(commandValue) + ";" + data;
+    strcpy(buffer, commandStr.c_str());
+    n = write(sockfd, buffer, strlen(buffer) + 1);
+    if (n < 0) {
+        throw std::runtime_error("Error writing to socket (code 5)");
+    }
 }
 
 
