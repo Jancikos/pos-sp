@@ -24,7 +24,6 @@ set(COMMON_SOURCES
 add_executable(pos_sp_client
         ${COMMON_SOURCES}
         main_client.cpp
-        utils/MySocketClient.h
 )
 
 # Server executable

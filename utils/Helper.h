@@ -11,6 +11,10 @@
 
 class Helper {
 public:
+    static int readIntFromConsole(std::string msg, int min = 0, int max = 10) {
+        std::cout << msg;
+        return Helper::readIntFromConsole(min, max);
+    }
     static int readIntFromConsole(int min = 0, int max = 10) {
         int input;
 

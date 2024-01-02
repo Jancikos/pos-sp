@@ -12,10 +12,14 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
+#include "MySocketServer.h"
 
 class MySocketClient {
 public:
-    static int run(int argc, char *argv[]);
+    int run(int argc, char *argv[]);
+
+private:
+    std::string getFromSocket(int sockfd, ServerCommands command, std::string data = "0");
 };
 
 int MySocketClient::run(int argc, char **argv) {
@@ -57,11 +61,13 @@ int MySocketClient::run(int argc, char **argv) {
         return 4;
     }
 
-    // tu sa pripravi loader a ak je to potrebne, tak sa nacita simulacia zo suboru
-    SimulationCsvLoader loader("/home/kostor/sp/simulations.csv");
-    // SimulationCsvLoader loader("./data/simulations.csv");
+    // klient je pripojeny na socket, moze zacat
+
+
+    // nacita sa simulacia zo suboru alebo sa vytvori nova
     SimulationCsvRecord simulationCsvRecord;
 
+    // todo refaktor - spravit si specialneho pootomka options pre yes/no odpoved (aj s enumom...)
     Options nacitanie;
     std::cout << "Do you want to load map from server?" << std::endl;
     nacitanie.addOption(1, "yes");
@@ -69,81 +75,31 @@ int MySocketClient::run(int argc, char **argv) {
     int result = nacitanie.getOptionCLI("Enter number of your choice: ");
 
     switch (result) {
+        // nacitaj ulozenu simulaciu zo socketu
         case 1: {
             // ulozene simulacie sa vypisu
-            for (auto const& [key, simulationCsvRecord] : loader.getSimulationRecords())
-            {
-                std::cout << key << std::endl;
-            }
+            std::string result = this->getFromSocket(sockfd, ServerCommands::LIST);
+            std::cout << "List of saved simulations: " << std::endl << result << std::endl;
 
-            // tu sa nacita simulacia zo suboru
             // posli nazov simulacie na server
-            std::string simTitle = Helper::readLineFromConsole("Enter simulation title: ");
+            std::string simTitle = Helper::readLineFromConsole("Enter selected simulation title: ");
             // poslem spravu na server
-            strcpy(buffer, simTitle.c_str());
-            n = write(sockfd, buffer, strlen(buffer));
-            if (n < 0) {
-                perror("Error writing to socket");
-                return 5;
-            }
-
-            // precitam spravu od servera a parsnem ju do simulationCsvRecord
-            bzero(buffer, 256);
-            n = read(sockfd, buffer, 255);
-            if (n < 0) {
-                perror("Error reading from socket");
-                return 6;
-            }
-            std::cout << buffer << std::endl;
-            std::string item;
-            int i = 0;
-            std::stringstream ss(buffer);
-            while (getline(ss, item, ';'))
-            {
-                switch (i)
-                {
-                    case 0:
-                        simulationCsvRecord.setTitle(item);
-                        break;
-                    case 1:
-                        simulationCsvRecord.setSeed(std::stoul(item));
-                        break;
-                    case 2:
-                        simulationCsvRecord.setWidth(std::stoi(item));
-                        break;
-                    case 3:
-                        simulationCsvRecord.setHeight(std::stoi(item));
-                        break;
-                    case 4:
-                        simulationCsvRecord.setTime(std::stoul(item));
-                        break;
-                    default:
-                        break;
-                }
-                i++;
-            }
+            simulationCsvRecord = SimulationCsvRecord(
+                    this->getFromSocket(sockfd, ServerCommands::LOAD, simTitle)
+            );
             break;
         }
+        // vytvor nova simulacia
         case 2:
-            // tu sa vytvori nova simulacia
-            // posli spravu na server, ze chcem vytvorit novu simulaciu
-            std::string simTitle = "new";
-            strcpy(buffer, simTitle.c_str());
-            n = write(sockfd, buffer, strlen(buffer));
-            if (n < 0) {
-                perror("Error writing to socket");
-                return 5;
-            }
 
-            // vypytam si potrebne udaje od uzivatela a vytvorim novu simulaciu
-            std::cout << "Enter simulation title: " << std::endl;
-            std::string title;
-            std::cin >> title;
+            // vypytam si potrebne udaje od uzivatela
+            std::string title = Helper::readLineFromConsole("Enter simulation title: ");
+            int width = Helper::readIntFromConsole("Enter simulation width: ", 5, 200);
+            int height = Helper::readIntFromConsole("Enter simulation height: ", 5, 200);
+
+            // vytvorim zaznam simulacie
             simulationCsvRecord.setTitle(title);
             simulationCsvRecord.setSeed(std::chrono::system_clock::now().time_since_epoch().count());
-            std::cout << "Enter map width and height: " << std::endl;
-            int width, height;
-            std::cin >> width >> height;
             simulationCsvRecord.setWidth(width);
             simulationCsvRecord.setHeight(height);
             break;
@@ -154,6 +110,7 @@ int MySocketClient::run(int argc, char **argv) {
     simulation.run();
 
     // spyta sa ci chce ulozit simulaciu
+    // todo refaktor - spravit si specialneho pootomka options pre yes/no odpoved (aj s enumom...)
     Options options;
     options.addOption(1, "yes");
     options.addOption(2, "no");
@@ -161,37 +118,37 @@ int MySocketClient::run(int argc, char **argv) {
 
     if (saveResult == 1) {
         // posli spravu na server, ze chcem ulozit simulaciu
-        std::string resultSave = "save";
-        strcpy(buffer, resultSave.c_str());
-        n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0) {
-            perror("Error writing to socket");
-            return 5;
-        }
-
-        // precitam spravu od servera, ze je ready na prijatie simulacie
-        bzero(buffer, 256);
-        n = read(sockfd, buffer, 255);
-        if (n < 0) {
-            perror("Error reading from socket");
-            return 6;
-        }
-
-        // simulacia sa posle na server
-        simulationCsvRecord = simulation.toCsvRecord();
-        std::string simulationString = simulationCsvRecord.toCsv();
-        strcpy(buffer, simulationString.c_str());
-        n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0) {
-            perror("Error writing to socket");
-            return 5;
-        }
+        std::string result = this->getFromSocket(sockfd, ServerCommands::SAVE, simulationCsvRecord.toCsv());
+        std::cout << "Simulation saved" << std::endl;
     }
 
     // zatvorim socket
     close(sockfd);
 
     return 0;
+}
+
+std::string MySocketClient::getFromSocket(int sockfd, ServerCommands command, std::string data) {
+    int n;
+    char buffer[256];
+
+    // posli spravu na server, aby poslal naspat nieco
+    int commandValue = static_cast<int>(command);
+    std::string commandStr = std::to_string(commandValue) + ";" + data;
+    strcpy(buffer, commandStr.c_str());
+    n = write(sockfd, buffer, strlen(buffer));
+    if (n < 0) {
+        throw std::runtime_error("Error writing to socket (code 5)");
+    }
+
+    // precitam spravu od servera
+    bzero(buffer, strlen(buffer));
+    n = read(sockfd, buffer, strlen(buffer) - 1);
+    if (n < 0) {
+        throw std::runtime_error("Error reading from socket (code 6)");
+    }
+
+    return std::string(buffer);
 }
 
 
