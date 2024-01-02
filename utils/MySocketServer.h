@@ -72,14 +72,14 @@ int MySocketServer::run() {socklen_t cli_len;
         return 2;
     }
 
-    // listen na sockete
-    std::cout << "Listening on port " << port << std::endl;
-    listen(this->sockfd, 5);
-    cli_len = sizeof(cli_addr);
-
     while (true) {
         std::cout << "Waiting for client to connect" << std::endl;
 
+        // listen na sockete
+        std::cout << "Listening on port " << port << std::endl;
+        listen(this->sockfd, 5);
+        cli_len = sizeof(cli_addr);
+        
         // potvrdenie spojenia s klientom
         // todo od tohto miesta vytvorit novy thread
         newsockfd = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
