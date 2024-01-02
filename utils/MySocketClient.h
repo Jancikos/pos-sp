@@ -66,8 +66,8 @@ int MySocketClient::run(std::string hostname, int port) {
         // nacitaj ulozenu simulaciu zo socketu
         case 1: {
             // ulozene simulacie sa vypisu
-            std::string result = this->getFromSocket(sockfd, ServerCommands::LIST);
-            std::cout << "List of saved simulations: " << std::endl << result << std::endl;
+            std::string response = this->getFromSocket(sockfd, ServerCommands::LIST);
+            std::cout << "List of saved simulations: " << std::endl << response << std::endl;
 
             // posli nazov simulacie na server
             std::string simTitle = Helper::readLineFromConsole("Enter selected simulation title: ");
@@ -106,9 +106,12 @@ int MySocketClient::run(std::string hostname, int port) {
 
     if (saveResult == 1) {
         // posli spravu na server, ze chcem ulozit simulaciu
-        std::string result = this->getFromSocket(sockfd, ServerCommands::SAVE, simulationCsvRecord.toCsv());
+        SimulationCsvRecord newSimulationCsvRecord = simulation.toCsvRecord();
+        std::string result = this->getFromSocket(sockfd, ServerCommands::SAVE, newSimulationCsvRecord.toCsv());
         std::cout << "Simulation saved" << std::endl;
     }
+
+//    this->getFromSocket(sockfd, ServerCommands::END);
 
     // zatvorim socket
     close(sockfd);
@@ -124,14 +127,14 @@ std::string MySocketClient::getFromSocket(int sockfd, ServerCommands command, st
     int commandValue = static_cast<int>(command);
     std::string commandStr = std::to_string(commandValue) + ";" + data;
     strcpy(buffer, commandStr.c_str());
-    n = write(sockfd, buffer, strlen(buffer));
+    n = write(sockfd, buffer, strlen(buffer) + 1);
     if (n < 0) {
         throw std::runtime_error("Error writing to socket (code 5)");
     }
 
     // precitam spravu od servera
-    bzero(buffer, strlen(buffer));
-    n = read(sockfd, buffer, strlen(buffer) - 1);
+    bzero(buffer, 256);
+    n = read(sockfd, buffer, 255);
     if (n < 0) {
         throw std::runtime_error("Error reading from socket (code 6)");
     }

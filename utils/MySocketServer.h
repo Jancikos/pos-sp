@@ -23,6 +23,7 @@ enum ServerCommands : int {
     SAVE = 3
 };
 
+// @todo bool navratove hodnoty premenit na vynimky a odchytavat ich v maine
 class MySocketServer {
 private:
     int port;
@@ -85,13 +86,13 @@ int MySocketServer::run() {socklen_t cli_len;
     std::cout << "Client connected" << std::endl;
 
     char buffer[256];
-    bzero(buffer,256);
 
     ServerCommands command;
     std::string data;
     // citanie zo socketu
     do {
         std::cout << "Waiting for client to send message" << std::endl;
+        bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
         if (n < 0)
         {
@@ -101,8 +102,10 @@ int MySocketServer::run() {socklen_t cli_len;
         printf("Here is the message: %s\n", buffer);
 
         // split buffer into command and data (; as separator)
-        command = ServerCommands(atoi(strtok(buffer, ";")));
-        data = strtok(NULL, ";");
+        std::string bufferStr(buffer);
+        int pos = bufferStr.find(';');
+        command = static_cast<ServerCommands>(std::stoi(bufferStr.substr(0, pos)));
+        data = bufferStr.substr(pos + 1);
 
         bool ok = false;
         switch (command) {
@@ -162,7 +165,7 @@ bool MySocketServer::sendSimulation(int sckfd, std::string simTitle) {
 
 bool MySocketServer::sendDataToClient(int sockfd, std::string data) {
     const char* msg = data.c_str();
-    int n = write(sockfd, msg, strlen(msg)+1)    ;
+    int n = write(sockfd, msg, strlen(msg) + 1);
     if (n < 0)
     {
         perror("Error writing to socket");

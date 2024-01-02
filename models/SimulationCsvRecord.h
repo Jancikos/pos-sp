@@ -91,7 +91,6 @@ SimulationCsvRecord::SimulationCsvRecord(std::string csvRecordStr) {
     std::stringstream ss(csvRecordStr);
     while (getline(ss, item, ';'))
     {
-        bool ok = true;
         switch (i)
         {
             case 0:
