@@ -77,10 +77,12 @@ void SimulationCsvLoader::load() {
 }
 
 void SimulationCsvLoader::save() {
+    // otvor subor na zapis
     std::ofstream outputFile(this->filePath);
 
     if (outputFile.is_open())
     {
+        // prejdi vsetky zapisane zaznamy a zapis ich do suboru
         for (auto const& [key, simulationCsvRecord] : this->simulationRecords)
         {
             outputFile << simulationCsvRecord.toCsv() << std::endl;
@@ -91,6 +93,7 @@ void SimulationCsvLoader::save() {
 }
 
 void SimulationCsvLoader::addSimulationRecord(SimulationCsvRecord simulationCsvRecord) {
+    // prida sa novy zaznam a ulozi sa
     this->simulationRecords[simulationCsvRecord.getTitle()] = simulationCsvRecord;
     this->save();
 }

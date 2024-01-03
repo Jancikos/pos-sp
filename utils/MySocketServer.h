@@ -94,8 +94,10 @@ int MySocketServer::run() {socklen_t cli_len;
             return 3;
         }
 
+        // pridanie noveho socketu do zoznamu
         this->newsockfds.push_back(newsockfd);
         std::cout << "Client " << newsockfd << " connected" << std::endl;
+        // vytvorenie noveho threadu
         auto* clientSocket = new std::thread(&MySocketServer::manageSocket, this, newsockfd);
     }
 
@@ -105,6 +107,7 @@ int MySocketServer::run() {socklen_t cli_len;
 }
 
 bool MySocketServer::sendSimulationsList(int sockfd) {
+    // posli zoznam simulacii
     std::string msg;
 
     for (std::pair<const std::basic_string<char>, SimulationCsvRecord> item : this->simulationLoader.getSimulationRecords()) {
@@ -115,6 +118,7 @@ bool MySocketServer::sendSimulationsList(int sockfd) {
 }
 
 bool MySocketServer::sendSimulation(int sckfd, std::string simTitle) {
+    // nacitaj simulaciu zo suboru
     SimulationCsvRecord simulationCsvRecord = this->simulationLoader.getByTitle(simTitle);
 
     // zapis do socketu
@@ -125,6 +129,7 @@ bool MySocketServer::sendSimulation(int sckfd, std::string simTitle) {
 }
 
 bool MySocketServer::sendDataToClient(int sockfd, std::string data) {
+    // zapisu sa data do socketu
     const char* msg = data.c_str();
     int n = write(sockfd, msg, strlen(msg) + 1);
     if (n < 0)
@@ -143,9 +148,12 @@ bool MySocketServer::saveSimulation(int sckfd, std::string csvRecordStr) {
 
     std::cout << "Client " << sckfd << " wants to save simulation " << simulationCsvRecord.getTitle() << std::endl;
     {
+        // tu sa vytvori lock na mutex, aby sa zabezpecilo, ze ziadny iny thread nepristupuje k tomuto kodu
+        // v tomto pripade je to zapis do suboru
+        // sleep je v tomto pripade iba pre demonstraciu
         std::unique_lock<std::mutex> lck(this->mtx);
         std::cout << "Client " << sckfd << " is saving simulation " << simulationCsvRecord.getTitle() << std::endl;
-        sleep(5); // iba pre demonstraciu
+        sleep(5);
         this->simulationLoader.addSimulationRecord(simulationCsvRecord);
         std::cout << "Client " << sckfd << " saved simulation " << simulationCsvRecord.getTitle() << std::endl;
         sleep(1);
@@ -175,32 +183,38 @@ int MySocketServer::manageSocket(int newsockfd) {
         }
         printf("Here is the message: %s\n", buffer);
 
-        // split buffer into command and data (; as separator)
+        // pripravim si command a data
         std::string bufferStr(buffer);
         int pos = bufferStr.find(';');
         command = static_cast<ServerCommands>(std::stoi(bufferStr.substr(0, pos)));
         data = bufferStr.substr(pos + 1);
 
+        // spracovanie commandu
         bool ok = true;
         switch (command) {
             case ServerCommands::LIST:
+                // posli zoznam simulacii
                 std::cout << "Client " << newsockfd << " wants to list simulations" << std::endl;
                 ok = this->sendSimulationsList(newsockfd);
                 break;
             case ServerCommands::LOAD:
+                // posli simulaciu
                 std::cout << "Client " << newsockfd << " wants to load simulation" << std::endl;
                 ok = this->sendSimulation(newsockfd, data);
                 break;
             case ServerCommands::SAVE:
+                // uloz simulaciu
                 std::cout << "Client " << newsockfd << " wants to save simulation" << std::endl;
                 ok = this->saveSimulation(newsockfd, data);
                 break;
             default:
+                // ukonci spojenie
                 command = ServerCommands::END;
                 std::cout << "Client " << newsockfd << " wants to end connection" << std::endl;
                 break;
         }
 
+        // pokial sa nepodarilo odoslat data, tak posli chybovu spravu
         if (!ok) {
             std::cout << "Error sending data to client " << newsockfd << std::endl;
             return 5;

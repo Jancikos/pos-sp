@@ -37,12 +37,15 @@ public:
 };
 
 void Map::initializeBunks(std::default_random_engine &rnd) {
+    // alokuj pamat pre bunky
     this->cells = new Cell*[this->width];
 
+    // ziskaj instanciu BiotopeManagera
     auto* biotopManager = BiotopeManager::getInstance();
 
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
 
+    // prejdi vsetky bunky a vygeneruj im biotopy podla danej pravdepodobnosti
     for (int x = 0; x < this->width; x++) {
         this->cells[x] = new Cell[this->height];
         for (int y = 0; y < this->height; y++) {
@@ -78,6 +81,7 @@ Cell** Map::getCells() const {
 }
 
 void Map::print() {
+    // vypis mapu
     std::cout << "Map: " << this->width << "x" << this->height << std::endl;
     for (int y = 0; y < this->height; y++) {
         for (int x = 0; x < this->width; x++) {
@@ -89,6 +93,7 @@ void Map::print() {
 }
 
 void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
+    // pokial bunka hori, pridaj ju do zoznamu
     std::vector<Cell*> bunksOnFire;
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
@@ -101,8 +106,13 @@ void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
     }
 
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
+
+    // ziskaj instanciu WindManagera
     auto windManager = WindManager::getInstance();
 
+    // prejdi vsetky bunky, ktore horia a zisti, ci sa ohen rozsiri na susedne bunky
+    // offset znamena smer, v ktorom sa ma bunka rozsirit
+    // jedna sa o von Neumannovu susednost
     for (auto* cell : bunksOnFire) {
         for (int xOffset = -1; xOffset <= 1; xOffset++) {
             for (int yOffset = -1; yOffset <= 1; yOffset++) {
@@ -120,19 +130,20 @@ void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
 
                 auto& bunkXY = this->cells[x][y];
 
-                // if cell is burnt, skip it
+                // pokial bunka uz hori, preskoc ju
                 if (bunkXY.isBurnt()) {
                     continue;
                 }
 
-                // cell is not flammable
+                // bunka nie je horlava, preskoc ju
                 if (!bunkXY.getBiotope()->isFlammable()) {
                     continue;
                 }
 
+                // ziskaj pravdepodobnost, ze bunka bude horiet
                 double pOfFireSpread = windManager->probabilityOfSpreadingFire(windType, xOffset, yOffset);
 
-                // cell is not on fire
+                // bunka nehori, preskoc ju
                 if (dist(rnd) > pOfFireSpread) {
                     continue;
                 }
@@ -144,10 +155,12 @@ void Map::spreadFire(WindType windType, std::default_random_engine &rnd) {
 }
 
 bool Map::isOutOfMap(int x, int y) {
+    // zisti, ci je bunka mimo mapy
     return x < 0 || x >= this->width || y < 0 || y >= this->height;
 }
 
 void Map::changeOnFireToBurnt(std::default_random_engine &rnd) {
+    // ulozim si bunky, ktore horia, aby som ich mohol zmenit na spalene
     std::vector<Cell*> bunksOnFire;
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
@@ -155,11 +168,14 @@ void Map::changeOnFireToBurnt(std::default_random_engine &rnd) {
 
             if (cell.isOnFire()) {
                 bunksOnFire.push_back(&cell);
+
+                // zvysim pocet cyklov, ktore bunka hori
                 cell.setOnFireTimes(cell.getOnFireTimes() + 1);
             }
         }
     }
 
+    // nastavenie bunky na spalenu, pokial uz hori dlhsie ako 10 cyklov
     for (auto* cell : bunksOnFire) {
         if (cell->getOnFireTimes() > 10) {
             cell->setIsBurnt(true);
@@ -170,6 +186,7 @@ void Map::changeOnFireToBurnt(std::default_random_engine &rnd) {
 }
 
 void Map::changeBurntToMeadow(std::default_random_engine &rnd) {
+    // ak sa vo von Neumannovej susednosti nachadza voda, tak sa zhorena bunka zmeni na luku s pravdepodobnostou 10%
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {
@@ -208,6 +225,7 @@ void Map::changeBurntToMeadow(std::default_random_engine &rnd) {
 }
 
 void Map::changeMeadowToForest(std::default_random_engine &rnd) {
+    // zmeni sa luka na les, pokial sa v jej von Neumannovej susednosti nachadza aspon 1 les s pravdepodobnostou 2%
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
     for (int x = 0; x < this->width; x++) {
         for (int y = 0; y < this->height; y++) {

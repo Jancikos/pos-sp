@@ -78,6 +78,7 @@ void SimulationCsvRecord::setTime(unsigned long time) {
 }
 
 std::string SimulationCsvRecord::toCsv() const {
+    // vrati string v tvare: title;seed;width;height;time
     return this->title + DELIMETER
     + std::to_string(this->seed) + DELIMETER
     + std::to_string(this->width) + DELIMETER

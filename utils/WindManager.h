@@ -21,7 +21,7 @@ protected:
     inline static WindManager* instance;
     Wind** windTypes;
 
-    //   singleton
+    // singleton
     WindManager();
     ~WindManager();
     WindManager(WindManager &other) = delete;
@@ -46,6 +46,7 @@ WindManager::WindManager() {
 }
 
 WindManager *WindManager::getInstance() {
+    // vrati instanciu, ak neexistuje, vytvori ju
     if (WindManager::instance == nullptr) {
         WindManager::instance = new WindManager();
     }
@@ -53,6 +54,7 @@ WindManager *WindManager::getInstance() {
 }
 
 void WindManager::initializeWindTypes() {
+    // vytvori sa pole vetrov, ktore sa pouzivaju v programe
     windTypes = new Wind*[5];
 
     windTypes[WindType::NONE] = new Wind("None", 0, 0);
@@ -82,19 +84,19 @@ WindManager::~WindManager() {
 }
 
 double WindManager::probabilityOfSpreadingFire(WindType windType, int xOffset, int yOffset) {
-//  ak nie je vietor, tak je pravdepodobnosť 20%
+    // ak nie je vietor, tak je pravdepodobnosť 20%
     if (windType == WindType::NONE) {
         return 0.2;
     }
 
     auto wind = *this->getWind(windType);
 
-//    ak sa oheň šíri v smere vetra, tak je pravdepodobnosť 90%
+    // ak sa oheň šíri v smere vetra, tak je pravdepodobnosť 90%
     if (wind.getXOffSet() == xOffset && wind.getYOffSet() == yOffset) {
         return 0.9;
     }
 
-//    ak sa oheň nešíri v smere vetra, tak je pravdepodobnosť 2%
+    // ak sa oheň nešíri v smere vetra, tak je pravdepodobnosť 2%
     return 0.02;
 }
 

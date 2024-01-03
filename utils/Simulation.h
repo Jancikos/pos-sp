@@ -80,35 +80,43 @@ void Simulation::run() {
     mainMenu.addOption(MainMenuOptions::EXIT, "Exit");
 
     do {
+        // pokial je to nulty krok, tak sa len vypise mapa
         if (this->time == 0) {
             this->makeFirstStep();
             continue;
         }
 
+        // spravi sa krok a vypise sa mapa
         this->makeStep();
 
         bool continueUserEdit = true;
         do {
+            // zobrazi sa menu aby si uzivatel mohol vybrat co chce robit
             option = mainMenu.getOptionCLI("What do you want to do?");
             switch (option) {
                 case MainMenuOptions::ADD_FIRE:
+                    // prida sa poziar manualne
                     std::cout << "Adding fire manually" << std::endl;
                     this->addFireManualy();
                     break;
                 case MainMenuOptions::CHANGE_WIND:
+                    // zmeni sa smer vetra manualne
                     std::cout << "Changing wind manually" << std::endl;
                     this->setWindTypeManually();
                     std::cout << "New actual wind: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
                     break;
                 case MainMenuOptions::MAKE_STEP:
+                    // spravi sa krok
                     std::cout << "Making a step" << std::endl;
                     continueUserEdit = false;
                     break;
                 case MainMenuOptions::MAKE_N_STEPS:
+                    // spravi sa n krokov
                     std::cout << "Making n steps" << std::endl;
                     this->makeNSteps();
                     break;
                 case MainMenuOptions::EXIT:
+                    // ukonci sa simulacia
                     std::cout << "Exiting" << std::endl;
                     continueUserEdit = false;
                     break;
@@ -128,6 +136,7 @@ void Simulation::makeStep() {
     this->changeWindType();
 
     // rozsirime poziar
+    // pokial je to prvy krok, tak sa inicializuje poziar
     if (this->time == 1) {
         this->initFire();
     } else {
@@ -159,12 +168,14 @@ void Simulation::makeFirstStep() {
 }
 
 void Simulation::print() {
+    // vypiseme aktualny cas, smer vetra a mapu
     std::cout << "Time: " << this->time << std::endl;
     std::cout << "Wind: " << WindManager::getInstance()->getWindTypeTitle(this->windType) << std::endl;
     this->map->print();
 }
 
 void Simulation::setWindTypeManually() {
+    // zobrazi sa menu, aby si uzivatel mohol vybrat smer vetra
     auto* windManager = WindManager::getInstance();
     Options windMenu;
     windMenu.addOption(WindType::NONE, windManager->getWindTypeTitle(WindType::NONE));
@@ -180,6 +191,7 @@ void Simulation::setWindTypeManually() {
 }
 
 void Simulation::addFireManualy() {
+    // uzivatel si vyberie bunku, ktoru chce zapalit
     do {
         int x = 0, y = 0;
         std::cout << "Enter x and y coordinates for cell you want to set on fire: " << std::endl;
@@ -206,11 +218,15 @@ void Simulation::addFireManualy() {
 }
 
 void Simulation::changeWindType() {
+    // pokial je smer vetra NONE, tak sa nemeni
+    // vietor iny ako NONE ostava tri kola, potom sa moze zmenit
     if (this->windType != WindType::NONE) {
         if (this->time - this->lastWindChange < 3) {
             return;
         }
     }
+
+    // s pravdepodobnostou 90% sa zmeni smer vetra na NONE
     static std::uniform_real_distribution<double> distWind(0, 1);
     if (distWind(this->rnd) < 0.9) {
         this->windType = WindType::NONE;
@@ -220,11 +236,13 @@ void Simulation::changeWindType() {
     this->lastWindChange = this->time;
     static std::uniform_int_distribution<int> distWindType(1, 4);
 
+    // zmeni sa smer vetra na nahodny
     int option = distWindType(this->rnd);
     this->windType = static_cast<WindType>(option);
 }
 
 void Simulation::makeNSteps() {
+    // uzivatel si vyberie pocet krokov, ktore chce spravit
     int n = 0;
     std::cout << "Enter steps count: " << std::endl;
     std::cin >> n;
@@ -233,17 +251,18 @@ void Simulation::makeNSteps() {
 
     for (int i = 0; i < n; i++) {
         this->makeStep();
-//        sleep for 1 second
+        // sleep for 1 second
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
 }
 
 void Simulation::initFire() {
-    //    inicializacia poziaru
+    // inicializacia poziaru
     std::uniform_int_distribution<int> distWidth(0, this->map->getWidth() - 1);
     std::uniform_int_distribution<int> distHeight(0, this->map->getHeight() - 1);
 
+    // vyberie sa nahodna bunka, ktora sa zapali
     do {
         int x = distWidth(this->rnd);
         int y = distHeight(this->rnd);
@@ -258,6 +277,8 @@ void Simulation::initFire() {
 }
 
 void Simulation::warmup(int repCount) {
+    // warmup sluzi na to, aby preslo tolko krokov, kolko si uzivatel zadal
+    // toto sa pouziva iba ked mal pouzivatel simulaciu ulozenu a chce v nej pokracovat
     this->time = 1;
 
     for (int i = 0; i < repCount; i++) {
@@ -266,10 +287,12 @@ void Simulation::warmup(int repCount) {
 }
 
 SimulationCsvRecord Simulation::toCsvRecord() {
+    // vrati zaznam simulacie
     return SimulationCsvRecord(this->nazov, this->seed, this->map->getWidth(), this->map->getHeight(), this->time);
 }
 
 std::string Simulation::toString() {
+    // vrati string v tvare: nazov;seed;width;height;time
     std::string result = "";
     result += this->nazov + ";" + std::to_string(this->seed) + ";" + std::to_string(this->map->getWidth()) + ";" + std::to_string(this->map->getHeight()) + ";" + std::to_string(this->time);
     return result;

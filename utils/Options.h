@@ -50,6 +50,7 @@ public:
 
     void addOption(const int id, const std::string title)
     {
+        // prida sa nova moznost
         auto* option = new Option(id, title);
         options.push_back(option);
     }
@@ -61,6 +62,7 @@ public:
 
     void addYesNoOptions()
     {
+        // pridanie moznosti Yes/No
         this->addOption(YesNoOptions::YES, "Yes");
         this->addOption(YesNoOptions::NO, "No");
     }

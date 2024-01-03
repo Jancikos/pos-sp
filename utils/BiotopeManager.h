@@ -20,7 +20,7 @@ protected:
     inline static BiotopeManager* instance;
     Biotope** biotypes;
 
-    //   singleton
+    // singleton
     BiotopeManager();
     ~BiotopeManager();
     BiotopeManager(BiotopeManager &other) = delete;
@@ -41,6 +41,8 @@ BiotopeManager::BiotopeManager() {
 }
 
 BiotopeManager *BiotopeManager::getInstance() {
+    // vrati instanciu, ak neexistuje, vytvori ju
+    // singleton
     if (BiotopeManager::instance == nullptr) {
         BiotopeManager::instance = new BiotopeManager();
     }
@@ -48,8 +50,10 @@ BiotopeManager *BiotopeManager::getInstance() {
 }
 
 void BiotopeManager::initializeBiotypes() {
+    // vytvori pole biotopov, ktore sa pouzivaju v programe
     biotypes = new Biotope*[Biotopes::COUNT];
 
+    // kazdy biotop ma svoj nazov, znak, farbu a ci je horlavny
     biotypes[Biotopes::MEADOW] = new Biotope("Meadow", "█", "1;92",  true);
     biotypes[Biotopes::FOREST] = new Biotope("Forest", "█", "1:32", true);
     biotypes[Biotopes::WATER] = new Biotope("Water", "█", "1:34", false);

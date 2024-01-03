@@ -61,17 +61,18 @@ void Cell::printMap() {
     std::string biotopeCode = this->biotope->getCode();
 
     if (this->burnt) {
-        // print it in dark purple
+        // vypise bunku vo fialovej farbe
         std::cout << "\033[38;5;53m" << biotopeCode << "\033[0m";
         return;
     }
 
     if (this->onFire) {
-        // print it in red
+        // vypise bunku v cervenej farbe
         std::cout << "\033[1;31m" << biotopeCode << "\033[0m";
         return;
     }
 
+    // vypise bunku v jej farbe
     std::cout << "\033[" << this->biotope->getColor() << "m" << biotopeCode << "\033[0m";
 }
 

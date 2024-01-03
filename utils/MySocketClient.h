@@ -55,7 +55,6 @@ int MySocketClient::run(std::string hostname, int port) {
 
     // klient je pripojeny na socket, moze zacat
 
-
     // nacita sa simulacia zo suboru alebo sa vytvori nova
     SimulationCsvRecord simulationCsvRecord;
 
@@ -79,7 +78,7 @@ int MySocketClient::run(std::string hostname, int port) {
             );
             break;
         }
-        // vytvor nova simulacia
+        // vytvor si novu simulaciu
         case 2:
 
             // vypytam si potrebne udaje od uzivatela
@@ -100,10 +99,8 @@ int MySocketClient::run(std::string hostname, int port) {
     simulation.run();
 
     // spyta sa ci chce ulozit simulaciu
-    // todo refaktor - spravit si specialneho pootomka options pre yes/no odpoved (aj s enumom...)
     Options options;
-    options.addOption(1, "yes");
-    options.addOption(2, "no");
+    options.addYesNoOptions();
     int saveResult = options.getOptionCLI("Do you want to save simulation?");
 
     if (saveResult == 1) {
@@ -135,7 +132,7 @@ std::string MySocketClient::getFromSocket(int sockfd, ServerCommands command, st
         throw std::runtime_error("Error reading from socket (code 6)");
     }
 
-    return std::string(buffer);
+    return {std::string(buffer)};
 }
 
 void MySocketClient::sendToSocket(int sockfd, ServerCommands command, std::string data) {
