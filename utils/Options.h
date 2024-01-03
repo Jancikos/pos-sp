@@ -10,6 +10,11 @@
 #include <iostream>
 #include "Helper.h"
 
+enum YesNoOptions : int {
+    YES = 1,
+    NO = 2
+};
+
 class Option
 {
 private:
@@ -52,6 +57,12 @@ public:
     bool hasOptions() const
     {
         return !options.empty();
+    }
+
+    void addYesNoOptions()
+    {
+        this->addOption(YesNoOptions::YES, "Yes");
+        this->addOption(YesNoOptions::NO, "No");
     }
 
     int getOptionCLI(const std::string& question, bool checkForMinMax = true)

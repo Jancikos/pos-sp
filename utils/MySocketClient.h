@@ -13,6 +13,9 @@
 #include <netdb.h>
 #include <unistd.h>
 #include "MySocketServer.h"
+#include "Helper.h"
+#include "Options.h"
+#include "Simulation.h"
 
 class MySocketClient {
 public:
@@ -56,11 +59,9 @@ int MySocketClient::run(std::string hostname, int port) {
     // nacita sa simulacia zo suboru alebo sa vytvori nova
     SimulationCsvRecord simulationCsvRecord;
 
-    // todo refaktor - spravit si specialneho pootomka options pre yes/no odpoved (aj s enumom...)
     Options nacitanie;
     std::cout << "Do you want to load map from server?" << std::endl;
-    nacitanie.addOption(1, "yes");
-    nacitanie.addOption(2, "no");
+    nacitanie.addYesNoOptions();
     int result = nacitanie.getOptionCLI("Enter number of your choice: ");
 
     switch (result) {
