@@ -32,7 +32,7 @@ class MySocketServer {
 private:
     int port;
     int sockfd;
-    std::vector<std::thread> sockets;
+    std::vector<std::thread> threads;
     SimulationCsvLoader simulationLoader;
 
     std::mutex mtx;
@@ -50,7 +50,7 @@ private:
     bool sendSimulation(int sckfd, std::string simTitle);
     bool saveSimulation(int sckfd, std::string csvRecordStr);
 
-    int manageSocket(int newsockfd);
+    void manageSocket(int newsockfd);
 };
 
 int MySocketServer::run() {socklen_t cli_len;
@@ -78,7 +78,6 @@ int MySocketServer::run() {socklen_t cli_len;
         return 2;
     }
 
-    int i = 0;
     while (true) {
         std::cout << "Waiting for client to connect" << std::endl;
 
@@ -98,7 +97,23 @@ int MySocketServer::run() {socklen_t cli_len;
         // pridanie noveho socketu do zoznamu
         std::cout << "Client " << newsockfd << " connected" << std::endl;
         // vytvorenie noveho threadu
-        this->sockets.push_back(std::thread(&MySocketServer::manageSocket, this, newsockfd));
+
+        try {
+            this->threads.push_back(std::thread(&MySocketServer::manageSocket, this, newsockfd));
+        } catch (std::logic_error &e) {
+            std::cout << "Server turned off by client" << std::endl;
+            break;
+        } catch (std::runtime_error &e) {
+            perror(e.what());
+            break;
+        }
+    }
+
+    // zatvorenie threadu
+    for (auto& thread : this->threads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
 
     close(sockfd);
@@ -165,7 +180,7 @@ bool MySocketServer::saveSimulation(int sckfd, std::string csvRecordStr) {
     return this->sendDataToClient(sckfd, msg);
 }
 
-int MySocketServer::manageSocket(int newsockfd) {
+void MySocketServer::manageSocket(int newsockfd) {
     int n;
     char buffer[256];
 
@@ -178,8 +193,7 @@ int MySocketServer::manageSocket(int newsockfd) {
         n = read(newsockfd, buffer, 255);
         if (n < 0)
         {
-            perror("Error reading from socket");
-            return 4;
+            throw std::runtime_error("Error reading from socket");
         }
         printf("Here is the message: %s\n", buffer);
 
@@ -207,6 +221,24 @@ int MySocketServer::manageSocket(int newsockfd) {
                 std::cout << "Client " << newsockfd << " wants to save simulation" << std::endl;
                 ok = this->saveSimulation(newsockfd, data);
                 break;
+            case ServerCommands::TURN_OFF:
+                // vypni server
+                std::cout << "Client " << newsockfd << " wants to turn off server" << std::endl;
+
+                // nasilne stopni vsetky vlakna v threads
+                for (auto& thread : this->threads) {
+                    if (thread.joinable()) {
+                        thread.detach(); 
+                    }
+                }
+
+                // zavri socket
+                close(this->sockfd);
+
+                // vyhod vynimku, aby sa zastavil server
+                return;
+
+                throw std::logic_error("Server turned off");
             default:
                 // ukonci spojenie
                 command = ServerCommands::END;
@@ -217,15 +249,13 @@ int MySocketServer::manageSocket(int newsockfd) {
         // pokial sa nepodarilo odoslat data, tak posli chybovu spravu
         if (!ok) {
             std::cout << "Error sending data to client " << newsockfd << std::endl;
-            return 5;
+            throw std::runtime_error("Error sending data to client");
         }
     } while (command != ServerCommands::END);
 
     // zatvorenie socketov
     std::cout << "Closing socket" << std::endl;
     close(newsockfd);
-
-    return 0;
 }
 
 #endif //POS_SP_MYSOCKETSERVER_H

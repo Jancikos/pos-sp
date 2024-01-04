@@ -58,10 +58,9 @@ int MySocketClient::run(std::string hostname, int port) {
     // nacita sa simulacia zo suboru alebo sa vytvori nova
     SimulationCsvRecord simulationCsvRecord;
 
-    Options nacitanie;
-    std::cout << "Do you want to load map from server?" << std::endl;
-    nacitanie.addYesNoOptions();
-    int result = nacitanie.getOptionCLI("Enter number of your choice: ");
+    Options options;
+    options.addYesNoOptions();
+    int result = options.getOptionCLI("Do you want to load map from server? ");
 
     switch (result) {
         // nacitaj ulozenu simulaciu zo socketu
@@ -99,8 +98,6 @@ int MySocketClient::run(std::string hostname, int port) {
     simulation.run();
 
     // spyta sa ci chce ulozit simulaciu
-    Options options;
-    options.addYesNoOptions();
     int saveResult = options.getOptionCLI("Do you want to save simulation?");
 
     if (saveResult == 1) {
@@ -110,10 +107,20 @@ int MySocketClient::run(std::string hostname, int port) {
         std::cout << "Simulation saved" << std::endl;
     }
 
-    this->sendToSocket(sockfd, ServerCommands::END);
+    // spytaj sa, ci chce uzivatel celkovo ukoncit server
+    int endResult = options.getOptionCLI("Do you want to turn off server?");
+    if (endResult == 1) {
+        this->sendToSocket(sockfd, ServerCommands::TURN_OFF);
+    } else {
+        this->sendToSocket(sockfd, ServerCommands::END);
+    }
+
+
 
     // zatvorim socket
     close(sockfd);
+
+    std::cin >> n;
 
     return 0;
 }
