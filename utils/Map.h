@@ -19,6 +19,12 @@ private:
 
 public:
     Map(int width, int height) : width(width), height(height) { };
+    ~Map() {
+        for (int x = 0; x < this->width; x++) {
+            delete[] this->cells[x];
+        }
+        delete[] this->cells;
+    }
     void initializeBunks(std::default_random_engine &rnd);
     int getWidth() const;
     int getHeight() const;

@@ -32,7 +32,7 @@ class MySocketServer {
 private:
     int port;
     int sockfd;
-    std::vector<int> newsockfds;
+    std::vector<std::thread> sockets;
     SimulationCsvLoader simulationLoader;
 
     std::mutex mtx;
@@ -78,6 +78,7 @@ int MySocketServer::run() {socklen_t cli_len;
         return 2;
     }
 
+    int i = 0;
     while (true) {
         std::cout << "Waiting for client to connect" << std::endl;
 
@@ -95,10 +96,9 @@ int MySocketServer::run() {socklen_t cli_len;
         }
 
         // pridanie noveho socketu do zoznamu
-        this->newsockfds.push_back(newsockfd);
         std::cout << "Client " << newsockfd << " connected" << std::endl;
         // vytvorenie noveho threadu
-        auto* clientSocket = new std::thread(&MySocketServer::manageSocket, this, newsockfd);
+        this->sockets.push_back(std::thread(&MySocketServer::manageSocket, this, newsockfd));
     }
 
     close(sockfd);
@@ -222,9 +222,9 @@ int MySocketServer::manageSocket(int newsockfd) {
     } while (command != ServerCommands::END);
 
     // zatvorenie socketov
-    // todo - zatvorit sockety az po prijati spravy na ukoncenie spojenia
     std::cout << "Closing socket" << std::endl;
     close(newsockfd);
+
     return 0;
 }
 

@@ -38,6 +38,9 @@ public:
             this->warmup(pocetIteracii);
         }
     }
+    ~Simulation() {
+        delete this->map;
+    }
 
     void run();
 
