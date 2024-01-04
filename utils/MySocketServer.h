@@ -22,7 +22,8 @@ enum ServerCommands : int {
     END = 0,
     LIST = 1,
     LOAD = 2,
-    SAVE = 3
+    SAVE = 3,
+    TURN_OFF = 100 // @todo - jko - z clienta vypnut cely server
 };
 
 // @todo memory leaks skontrolovat
