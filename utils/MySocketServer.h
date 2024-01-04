@@ -26,7 +26,6 @@ enum ServerCommands : int {
 };
 
 // @todo memory leaks skontrolovat
-// @todo makefile finish
 // @todo bool navratove hodnoty premenit na vynimky a odchytavat ich v maine
 class MySocketServer {
 private:
@@ -225,6 +224,7 @@ int MySocketServer::manageSocket(int newsockfd) {
     // todo - zatvorit sockety az po prijati spravy na ukoncenie spojenia
     std::cout << "Closing socket" << std::endl;
     close(newsockfd);
+    return 0;
 }
 
 #endif //POS_SP_MYSOCKETSERVER_H
