@@ -27,7 +27,6 @@ enum ServerCommands : int {
     TURN_OFF = 100
 };
 
-// @todo memory leaks skontrolovat
 class MySocketServer {
 private:
     int port;
