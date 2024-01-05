@@ -252,7 +252,7 @@ bool MySocketServer::turnOffServer(int newsockfd) {
     {
         std::unique_lock<std::mutex> lck(this->mtx);
         std::cout << "Client " << newsockfd << " is turning off server" << std::endl;
-//                    sleep(5);
+        // sleep(5);
         this->stopSignal = true;
     }
 
