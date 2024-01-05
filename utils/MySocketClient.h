@@ -17,6 +17,7 @@
 #include "Options.h"
 #include "Simulation.h"
 
+// @todo osetrit dopytovanie sa na server, ktory je vypnuty / ked server vrati prazdnu spravu
 class MySocketClient {
 public:
     int run(std::string hostname, int port);
@@ -62,60 +63,62 @@ int MySocketClient::run(std::string hostname, int port) {
     options.addYesNoOptions();
     int result = options.getOptionCLI("Do you want to load map from server? ");
 
-    switch (result) {
-        // nacitaj ulozenu simulaciu zo socketu
-        case 1: {
-            // ulozene simulacie sa vypisu
-            std::string response = this->getFromSocket(sockfd, ServerCommands::LIST);
-            std::cout << "List of saved simulations: " << std::endl << response << std::endl;
+    try {
+        switch (result) {
+            // nacitaj ulozenu simulaciu zo socketu
+            case 1: {
+                // ulozene simulacie sa vypisu
+                std::string response = this->getFromSocket(sockfd, ServerCommands::LIST);
+                std::cout << "List of saved simulations: " << std::endl << response << std::endl;
 
-            // posli nazov simulacie na server
-            std::string simTitle = Helper::readLineFromConsole("Enter selected simulation title: ");
-            // poslem spravu na server
-            simulationCsvRecord = SimulationCsvRecord(
-                    this->getFromSocket(sockfd, ServerCommands::LOAD, simTitle)
-            );
-            break;
+                // posli nazov simulacie na server
+                std::string simTitle = Helper::readLineFromConsole("Enter selected simulation title: ");
+                // poslem spravu na server
+                simulationCsvRecord = SimulationCsvRecord(
+                        this->getFromSocket(sockfd, ServerCommands::LOAD, simTitle)
+                );
+                break;
+            }
+                // vytvor si novu simulaciu
+            case 2:
+
+                // vypytam si potrebne udaje od uzivatela
+                std::string title = Helper::readLineFromConsole("Enter simulation title: ");
+                int width = Helper::readIntFromConsole("Enter simulation width: ", 5, 200);
+                int height = Helper::readIntFromConsole("Enter simulation height: ", 5, 200);
+
+                // vytvorim zaznam simulacie
+                simulationCsvRecord.setTitle(title);
+                simulationCsvRecord.setSeed(std::chrono::system_clock::now().time_since_epoch().count());
+                simulationCsvRecord.setWidth(width);
+                simulationCsvRecord.setHeight(height);
+                break;
         }
-        // vytvor si novu simulaciu
-        case 2:
 
-            // vypytam si potrebne udaje od uzivatela
-            std::string title = Helper::readLineFromConsole("Enter simulation title: ");
-            int width = Helper::readIntFromConsole("Enter simulation width: ", 5, 200);
-            int height = Helper::readIntFromConsole("Enter simulation height: ", 5, 200);
+        // tu zbehne simulacia
+        Simulation simulation(simulationCsvRecord);
+        simulation.run();
 
-            // vytvorim zaznam simulacie
-            simulationCsvRecord.setTitle(title);
-            simulationCsvRecord.setSeed(std::chrono::system_clock::now().time_since_epoch().count());
-            simulationCsvRecord.setWidth(width);
-            simulationCsvRecord.setHeight(height);
-            break;
+        // spyta sa ci chce ulozit simulaciu
+        int saveResult = options.getOptionCLI("Do you want to save simulation?");
+
+        if (saveResult == 1) {
+            // posli spravu na server, ze chcem ulozit simulaciu
+            SimulationCsvRecord newSimulationCsvRecord = simulation.toCsvRecord();
+            this->getFromSocket(sockfd, ServerCommands::SAVE, newSimulationCsvRecord.toCsv());
+            std::cout << "Simulation saved" << std::endl;
+        }
+
+        // spytaj sa, ci chce uzivatel celkovo ukoncit server
+        int endResult = options.getOptionCLI("Do you want to turn off server?");
+        if (endResult == 1) {
+            this->sendToSocket(sockfd, ServerCommands::TURN_OFF);
+        } else {
+            this->sendToSocket(sockfd, ServerCommands::END);
+        }
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
     }
-
-    // tu zbehne simulacia
-    Simulation simulation(simulationCsvRecord);
-    simulation.run();
-
-    // spyta sa ci chce ulozit simulaciu
-    int saveResult = options.getOptionCLI("Do you want to save simulation?");
-
-    if (saveResult == 1) {
-        // posli spravu na server, ze chcem ulozit simulaciu
-        SimulationCsvRecord newSimulationCsvRecord = simulation.toCsvRecord();
-        this->getFromSocket(sockfd, ServerCommands::SAVE, newSimulationCsvRecord.toCsv());
-        std::cout << "Simulation saved" << std::endl;
-    }
-
-    // spytaj sa, ci chce uzivatel celkovo ukoncit server
-    int endResult = options.getOptionCLI("Do you want to turn off server?");
-    if (endResult == 1) {
-        this->sendToSocket(sockfd, ServerCommands::TURN_OFF);
-    } else {
-        this->sendToSocket(sockfd, ServerCommands::END);
-    }
-
-
 
     // zatvorim socket
     close(sockfd);

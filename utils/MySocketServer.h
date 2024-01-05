@@ -17,21 +17,22 @@
 #include <thread>
 #include <mutex>
 #include "SimulationCsvLoader.h"
+#include <atomic>
 
 enum ServerCommands : int {
     END = 0,
     LIST = 1,
     LOAD = 2,
     SAVE = 3,
-    TURN_OFF = 100 // @todo - jko - z clienta vypnut cely server
+    TURN_OFF = 100
 };
 
 // @todo memory leaks skontrolovat
-// @todo bool navratove hodnoty premenit na vynimky a odchytavat ich v maine
 class MySocketServer {
 private:
     int port;
     int sockfd;
+    std::atomic<bool> stopSignal = false;
     std::vector<std::thread> threads;
     SimulationCsvLoader simulationLoader;
 
@@ -51,6 +52,8 @@ private:
     bool saveSimulation(int sckfd, std::string csvRecordStr);
 
     void manageSocket(int newsockfd);
+
+    bool turnOffServer(int newsockfd);
 };
 
 int MySocketServer::run() {socklen_t cli_len;
@@ -79,6 +82,11 @@ int MySocketServer::run() {socklen_t cli_len;
     }
 
     while (true) {
+        if (this->stopSignal) {
+            std::cout << "Server turned off by client" << std::endl;
+            break;
+        }
+
         std::cout << "Waiting for client to connect" << std::endl;
 
         // listen na sockete
@@ -94,22 +102,13 @@ int MySocketServer::run() {socklen_t cli_len;
             return 3;
         }
 
-        // pridanie noveho socketu do zoznamu
         std::cout << "Client " << newsockfd << " connected" << std::endl;
-        // vytvorenie noveho threadu
 
-        try {
-            this->threads.push_back(std::thread(&MySocketServer::manageSocket, this, newsockfd));
-        } catch (std::logic_error &e) {
-            std::cout << "Server turned off by client" << std::endl;
-            break;
-        } catch (std::runtime_error &e) {
-            perror(e.what());
-            break;
-        }
+        // vytvorenie noveho threadu
+        this->threads.push_back(std::thread(&MySocketServer::manageSocket, this, newsockfd));
     }
 
-    // zatvorenie threadu
+    // zatvorenie threadov
     for (auto& thread : this->threads) {
         if (thread.joinable()) {
             thread.join();
@@ -188,6 +187,11 @@ void MySocketServer::manageSocket(int newsockfd) {
     std::string data;
     // citanie zo socketu
     do {
+        if (this->stopSignal) {
+            std::cout << "Server is turning off (client " << newsockfd << ")" << std::endl;
+            break;
+        }
+
         std::cout << "Waiting for client to send message" << std::endl;
         bzero(buffer,256);
         n = read(newsockfd, buffer, 255);
@@ -224,21 +228,7 @@ void MySocketServer::manageSocket(int newsockfd) {
             case ServerCommands::TURN_OFF:
                 // vypni server
                 std::cout << "Client " << newsockfd << " wants to turn off server" << std::endl;
-
-                // nasilne stopni vsetky vlakna v threads
-                for (auto& thread : this->threads) {
-                    if (thread.joinable()) {
-                        thread.detach(); 
-                    }
-                }
-
-                // zavri socket
-                close(this->sockfd);
-
-                // vyhod vynimku, aby sa zastavil server
-                return;
-
-                throw std::logic_error("Server turned off");
+                ok = this->turnOffServer(newsockfd);
             default:
                 // ukonci spojenie
                 command = ServerCommands::END;
@@ -256,6 +246,18 @@ void MySocketServer::manageSocket(int newsockfd) {
     // zatvorenie socketov
     std::cout << "Closing socket" << std::endl;
     close(newsockfd);
+}
+
+bool MySocketServer::turnOffServer(int newsockfd) {
+    // nastav signal na vypnutie servera
+    {
+        std::unique_lock<std::mutex> lck(this->mtx);
+        std::cout << "Client " << newsockfd << " is turning off server" << std::endl;
+//                    sleep(5);
+        this->stopSignal = true;
+    }
+
+    return true;
 }
 
 #endif //POS_SP_MYSOCKETSERVER_H
