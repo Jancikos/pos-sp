@@ -40,7 +40,7 @@ private:
 public:
     MySocketServer(int port, std::string pathToCsv) : port(port), simulationLoader(pathToCsv) {
     };
-    ~MySocketServer() {};
+    ~MySocketServer() = default;
     int run();
 
 private:
@@ -111,6 +111,7 @@ int MySocketServer::run() {socklen_t cli_len;
     for (auto& thread : this->threads) {
         if (thread.joinable()) {
             thread.join();
+            delete &thread;
         }
     }
 
