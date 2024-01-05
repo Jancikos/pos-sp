@@ -111,7 +111,6 @@ int MySocketServer::run() {socklen_t cli_len;
     for (auto& thread : this->threads) {
         if (thread.joinable()) {
             thread.join();
-            delete &thread;
         }
     }
 
