@@ -110,6 +110,7 @@ int MySocketServer::run() {socklen_t cli_len;
     // zatvorenie threadov
     for (auto& thread : this->threads) {
         if (thread.joinable()) {
+            std::cout << "Joining thread" << std::endl;
             thread.join();
         }
     }

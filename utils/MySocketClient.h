@@ -134,8 +134,6 @@ int MySocketClient::run(std::string hostname, int port) {
     // zatvorim socket
     close(sockfd);
 
-    std::cin >> n;
-
     return 0;
 }
 
