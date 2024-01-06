@@ -134,8 +134,6 @@ int MySocketClient::run(std::string hostname, int port) {
     // zatvorim socket
     close(sockfd);
 
-    std::cin >> n;
-
     return 0;
 }
 
@@ -149,7 +147,7 @@ std::string MySocketClient::getFromSocket(int sockfd, ServerCommands command, st
     // precitam spravu od servera
     bzero(buffer, 256);
 
-//    n = read(sockfd, buffer, 255);
+    // n = read(sockfd, buffer, 255);
     n = recv(sockfd, buffer, 255, MSG_NOSIGNAL);
     if (n < 0) {
         throw std::runtime_error("Error reading from socket (code 6)");
@@ -174,7 +172,7 @@ void MySocketClient::sendToSocket(int sockfd, ServerCommands command, std::strin
     // ignore SIGPIPE
     signal(SIGPIPE, SIG_IGN);
 
-//        n = write(sockfd, buffer, strlen(buffer) + 1);
+    // n = write(sockfd, buffer, strlen(buffer) + 1);
     n = send(sockfd, buffer, strlen(buffer) + 1, MSG_NOSIGNAL);
 
     if (n < 0) {

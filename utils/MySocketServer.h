@@ -40,7 +40,7 @@ private:
 public:
     MySocketServer(int port, std::string pathToCsv) : port(port), simulationLoader(pathToCsv) {
     };
-    ~MySocketServer() {};
+    ~MySocketServer() = default;
     int run();
 
 private:
@@ -110,6 +110,7 @@ int MySocketServer::run() {socklen_t cli_len;
     // zatvorenie threadov
     for (auto& thread : this->threads) {
         if (thread.joinable()) {
+            std::cout << "Joining thread" << std::endl;
             thread.join();
         }
     }
@@ -252,7 +253,7 @@ bool MySocketServer::turnOffServer(int newsockfd) {
     {
         std::unique_lock<std::mutex> lck(this->mtx);
         std::cout << "Client " << newsockfd << " is turning off server" << std::endl;
-//                    sleep(5);
+        // sleep(5);
         this->stopSignal = true;
     }
 
